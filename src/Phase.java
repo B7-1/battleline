@@ -15,6 +15,10 @@ class DealPhase implements Phase {
 		s.tacticsStack.clear();
 		s.players.get(0).cards.clear();
 		s.players.get(1).cards.clear();
+		for (Flag f : s.flags) {
+			f.cards.get(0).clear();
+			f.cards.get(1).clear();
+		}
 
 		// create unit card and shuffle stack
 		for (int suit = 0; suit < 6; suit++) {
