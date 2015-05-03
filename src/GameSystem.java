@@ -6,7 +6,7 @@ public class GameSystem {
 	/* @NonNull */ List<Player> players;
 	/* @NonNull */ Stack<UnitCard> unitStack;
 	/* @NonNull */ Stack<TacticsCard> tacticsStack;
-	/* @NonNull */ List<Flag> flags;
+	/* @NonNull */ Vector<Flag> flags;
 	int turn; /* 0 or 1 */
 
 	GameSystem() {
@@ -14,7 +14,17 @@ public class GameSystem {
 		players = new ArrayList<Player>();
 		unitStack = new Stack<UnitCard>();
 		tacticsStack = new Stack<TacticsCard>();
-		flags = new ArrayList<Flag>();
+		flags = new Vector<Flag>();
+	}
+
+	Player player(int i) {
+		assert 0 <= i && i < 2;
+		return players.get(i);
+	}
+
+	Flag flag(int i) {
+		assert 0 <= i && i < flags.size();
+		return flags.get(i);
 	}
 
 	Area selectionArea = Area.None;

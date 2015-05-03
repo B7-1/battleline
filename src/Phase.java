@@ -18,7 +18,7 @@ class OrderPhase implements Phase {
 
 class DealPhase implements Phase {
 	public void process(GameSystem s, Action act) {
-		System.out.print("Deal Phase:");
+		System.out.println("Deal Phase:");
 		// delete all cards
 		s.unitStack.clear();
 		s.tacticsStack.clear();
@@ -46,11 +46,11 @@ class DealPhase implements Phase {
 		// deal cards to players
 		for (int i = 0; i < 7; i++) {
 			UnitCard c = s.unitStack.pop();
-			s.players.get(0).cards.add(c);
+			s.player(0).cards.add(c);
 		}
 		for (int i = 0; i < 7; i++) {
 			UnitCard c = s.unitStack.pop();
-			s.players.get(1).cards.add(c);
+			s.player(1).cards.add(c);
 		}
 
 		s.phase = new SelectPhase(s);
@@ -91,7 +91,7 @@ class StationPhase implements Phase {
 	public void process(GameSystem s, Action act) {
 		assert act.flag != null;
 		act.flag.cards.get(s.turn).add(card);
-		s.players.get(s.turn).cards.remove(card);
+		s.player(s.turn).cards.remove(card);
 		s.selectionArea = Area.None;
 		s.phase = new JudgePhase();
 	}
@@ -135,6 +135,7 @@ class ChangePlayerPhase implements Phase {
 
 	public void process(GameSystem s, Action act) {
 		s.turn = (s.turn + 1) % 2;
+		System.out.println("player" + (s.turn + 1));
 		s.phase = new SelectPhase(s);
 	}
 }

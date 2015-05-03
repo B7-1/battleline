@@ -34,31 +34,42 @@ class CUI {
 				if (s.selectionArea == Area.None) {
 					System.out.println();
 					s.step();
+
 				} else if (s.selectionArea == Area.MyHand || s.selectionArea == Area.OpponentHand) {
 					System.out.println("select card from...");
-					for (Card c : s.players.get(s.turn).cards) {
-						System.out.print(" " + c.toString());
+					for (int i = 0; i < s.player(s.turn).cards.size(); i++) {
+						Card c = s.player(s.turn).cards.get(i);
+						System.out.print(" [" + i + "]" + c.toString());
 					}
 					System.out.println();
 
-					int idx = readInt(in);
-					Card c = s.players.get(s.turn).cards.get(idx);
-					s.selectCard(c);
+					final Player player = s.player(s.turn);
+					final int selectedIndex = readInt(in);
+					assert 0 <= selectedIndex && selectedIndex < player.cards.size();
+					s.selectCard(player.cards.get(selectedIndex));
+
 				} else if (s.selectionArea == Area.Flags) {
 					System.out.println("put card on one of the flags...");
-					for (Flag f : s.flags) {
-						System.out.println(" " + f.cards.get(0) + ":" + f.cards.get(1));
+					for (int i = 0; i < s.flags.size(); i++) {
+						Flag f = s.flag(i);
+						System.out.println(" " + f.cards.get(0) + ":" + i + ":" + f.cards.get(1));
 					}
 					System.out.println();
 
-					int idx = readInt(in);
-					s.selectFlag(s.flags.get(idx));
+					final int selectedIndex = readInt(in);
+					assert 0 <= selectedIndex && selectedIndex < s.flags.size();
+					s.selectFlag(s.flag(selectedIndex));
+
 				} else if (s.selectionArea == Area.CardStack) {
 					System.out.println("draw a card from...");
 					System.out.println("[0] unit, [1] tactics");
 
-					int idx = readInt(in);
-					s.selectStack(s.unitStack);
+					final int selectedIndex = readInt(in);
+					assert 0 <= selectedIndex && selectedIndex <= 1;
+					if (selectedIndex == 0)
+						s.selectStack(s.unitStack);
+					else if (selectedIndex == 1)
+						s.selectStack(s.unitStack);
 				}
 			}
 		} catch (Exception e) {
