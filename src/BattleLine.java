@@ -52,7 +52,11 @@ class CUI {
 					System.out.println("put card on one of the flags...");
 					for (int i = 0; i < s.flags.size(); i++) {
 						Flag f = s.flag(i);
-						System.out.println(" " + f.cards.get(0) + ":" + i + ":" + f.cards.get(1));
+						System.out.print(" " + f.cards.get(0));
+						System.out.print((f.owner == 0) ? "|" : ":");
+						System.out.print(i);
+						System.out.print((f.owner == 1) ? "|" : ":");
+						System.out.println(f.cards.get(1));
 					}
 					System.out.println();
 
