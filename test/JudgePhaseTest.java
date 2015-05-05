@@ -2,7 +2,7 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 import java.util.*;
 
-public class JudgePhaseTest {
+public class WedgeTest {
 	UnitCard c(int s, int n) {
 		return new UnitCard(s, n);
 	}
@@ -13,7 +13,7 @@ public class JudgePhaseTest {
 
 	JudgePhase phase;
 
-	public JudgePhaseTest() {
+	public WedgeTest() {
 		phase = new JudgePhase(new GameSystem());
 	}
 

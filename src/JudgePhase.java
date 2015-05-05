@@ -8,7 +8,7 @@ public class JudgePhase implements Phase {
         s.selectionArea = Area.None;
     }
 
-    boolean isWedge(List<Card> cards) {
+    boolean isSkirmish(List<Card> cards) {
         // TODO: add cases for tactics cards.
         UnitCard c1 = (UnitCard)cards.get(0);
         UnitCard c2 = (UnitCard)cards.get(1);
@@ -16,10 +16,9 @@ public class JudgePhase implements Phase {
         int suit = c1.suit;
 
         List<UnitCard> unitCards = Arrays.asList(c1, c2, c3);
-        if (!unitCards.stream().allMatch((c) -> c.suit == suit)) return false;
         OptionalInt max = unitCards.stream().mapToInt((c) -> c.number).max();
         OptionalInt min = unitCards.stream().mapToInt((c) -> c.number).min();
-　
+
         return max.getAsInt() - min.getAsInt() == 2;
     }
 
@@ -39,7 +38,7 @@ public class JudgePhase implements Phase {
             str += ((UnitCard)c).number * 10;
         }
 
-        if (isWedge(cards)) str += 10000;
+        if (isSkirmish(cards)) str += 10000;
         if (isBattalion(cards)) str += 20000;
         if (isPhalanx(cards)) str += 25000;
 
