@@ -9,7 +9,18 @@ public class JudgePhase implements Phase {
     }
 
     boolean isWedge(List<Card> cards) {
-        return false;
+        // TODO: add cases for tactics cards.
+        UnitCard c1 = (UnitCard)cards.get(0);
+        UnitCard c2 = (UnitCard)cards.get(1);
+        UnitCard c3 = (UnitCard)cards.get(2);
+        int suit = c1.suit;
+
+        List<UnitCard> unitCards = Arrays.asList(c1, c2, c3);
+        if (!unitCards.stream().allMatch((c) -> c.suit == suit)) return false;
+        OptionalInt max = unitCards.stream().mapToInt((c) -> c.number).max();
+        OptionalInt min = unitCards.stream().mapToInt((c) -> c.number).min();
+　
+        return max.getAsInt() - min.getAsInt() == 2;
     }
 
     boolean isBattalion(List<Card> cards) {
