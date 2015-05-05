@@ -10,14 +10,13 @@ public class JudgePhase implements Phase {
 
     boolean isSkirmish(List<Card> cards) {
         // TODO: add cases for tactics cards.
-        UnitCard c1 = (UnitCard)cards.get(0);
-        UnitCard c2 = (UnitCard)cards.get(1);
-        UnitCard c3 = (UnitCard)cards.get(2);
-        int suit = c1.suit;
 
-        List<UnitCard> unitCards = Arrays.asList(c1, c2, c3);
-        OptionalInt max = unitCards.stream().mapToInt((c) -> c.number).max();
-        OptionalInt min = unitCards.stream().mapToInt((c) -> c.number).min();
+        OptionalInt max = cards.stream()
+                .mapToInt((c) -> ((UnitCard)c).number)
+                .max();
+        OptionalInt min = cards.stream()
+                .mapToInt((c) -> ((UnitCard)c).number)
+                .min();
 
         return max.getAsInt() - min.getAsInt() == 2;
     }
@@ -34,7 +33,7 @@ public class JudgePhase implements Phase {
         int str = 0;
 
         for (Card c : cards) {
-            if (!(c instanceof UnitCard)) continue;
+            assert (c instanceof UnitCard);
             str += ((UnitCard)c).number * 10;
         }
 
