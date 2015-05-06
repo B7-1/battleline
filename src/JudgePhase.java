@@ -35,7 +35,16 @@ public class JudgePhase implements Phase {
     }
 
     boolean isPhalanx(List<Card> cards) {
-        return false;
+                // TODO: add cases for tactics cards.
+
+        OptionalInt max = cards.stream()
+                .mapToInt((c) -> ((UnitCard)c).number)
+                .max();
+        OptionalInt min = cards.stream()
+                .mapToInt((c) -> ((UnitCard)c).number)
+                .min();
+
+        return max.getAsInt() == min.getAsInt();
     }
 
     int strengthOfSquad(List<Card> cards) {
