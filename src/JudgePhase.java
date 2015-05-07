@@ -10,14 +10,17 @@ public class JudgePhase implements Phase {
     }
 
     boolean isSkirmish(List<UnitCard> cards) {
-        OptionalInt max = cards.stream()
-        .mapToInt(c -> c.number)
-        .max();
-        OptionalInt min = cards.stream()
-        .mapToInt(c -> c.number)
-        .min();
+        int min = 100;
+        int max = -100;
 
-        return max.getAsInt() - min.getAsInt() == 2;
+        for (UnitCard c : cards) {
+            if (min == c.number || max == c.number) return false;
+
+            if (min > c.number) min = c.number;
+            if (max < c.number) max = c.number;
+        }
+
+        return max - min + 1 == cards.size();
     }
 
     boolean isBattalion(List<UnitCard> cards) {
@@ -59,9 +62,11 @@ public class JudgePhase implements Phase {
 
         for (int suit = 0; suit < UnitCard.NumberOfSuits; suit++) {
             for (int number = 1; number <= UnitCard.MaximumNumber; number++) {
-                cards.add(new UnitCard(suit, number));
+                UnitCard c = new UnitCard(suit, number);
+                cards.add(c);
                 int str = func.applyAsInt(cards);
                 if (str > max) max = str;
+                cards.remove(c);
             }
         }
 
@@ -84,9 +89,11 @@ public class JudgePhase implements Phase {
         int max = 0;
 
         for (int suit = 0; suit < UnitCard.NumberOfSuits; suit++) {
-            cards.add(new UnitCard(suit, 8));
+            UnitCard c = new UnitCard(suit, 8);
+            cards.add(c);
             int str = func.applyAsInt(cards);
             if (str > max) max = str;
+            cards.remove(c);
         }
 
         return max;
@@ -109,9 +116,11 @@ public class JudgePhase implements Phase {
 
         for (int suit = 0; suit < UnitCard.NumberOfSuits; suit++) {
             for (int number = 1; number <= 3; number++) {
-                cards.add(new UnitCard(suit, number));
+                UnitCard c = new UnitCard(suit, number);
+                cards.add(c);
                 int str = func.applyAsInt(cards);
                 if (str > max) max = str;
+                cards.remove(c);
             }
         }
 
@@ -137,13 +146,13 @@ public class JudgePhase implements Phase {
             alterCompanion(c1, c2 ->
                 alterShield(c2, c3 ->
                     func.applyAsInt(c3.stream().map(c -> (UnitCard)c).collect(Collectors.toList()))
+                    )
                 )
-            )
-        );
+            );
     }
 
     int strengthOfCards(List<Card> cards) {
-        return alterTactics(cards, this::strengthOfSquad);
+        return alterTactics(new ArrayList<Card>(cards), this::strengthOfSquad);
     }
 
     public void process(GameSystem s, Action act) {
