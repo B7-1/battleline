@@ -65,10 +65,14 @@ public class JudgePhase implements Phase {
                 UnitCard c = new UnitCard(suit, number);
                 cards.add(c);
                 int str = func.applyAsInt(cards);
-                if (str > max) max = str;
+                if (str > max) {
+                    max = str;
+                }
                 cards.remove(c);
             }
         }
+
+        cards.add(leader);
 
         return max;
     }
@@ -96,6 +100,8 @@ public class JudgePhase implements Phase {
             cards.remove(c);
         }
 
+        cards.add(companion);
+
         return max;
     }
 
@@ -119,10 +125,14 @@ public class JudgePhase implements Phase {
                 UnitCard c = new UnitCard(suit, number);
                 cards.add(c);
                 int str = func.applyAsInt(cards);
-                if (str > max) max = str;
+                if (str > max) {
+                    max = str;
+                }
                 cards.remove(c);
             }
         }
+
+        cards.add(shield);
 
         return max;
     }
@@ -134,9 +144,15 @@ public class JudgePhase implements Phase {
             str += c.number * 10;
         }
 
-        if (isSkirmish(squad)) str += 10000;
-        if (isBattalion(squad)) str += 20000;
-        if (isPhalanx(squad)) str += 25000;
+        final int SkirmishBonus = 10000;
+        final int BattalionBonus = 20000;
+        final int PhalanxBonus = 25000;
+        final int WedgeBonus = 30000;
+
+        if (isSkirmish(squad) && isBattalion(squad)) str += WedgeBonus;
+        else if (isPhalanx(squad)) str += PhalanxBonus;
+        else if (isBattalion(squad)) str += BattalionBonus;
+        else if (isSkirmish(squad)) str += SkirmishBonus;
 
         return str;
     }
