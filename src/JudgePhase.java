@@ -1,140 +1,117 @@
 import java.util.*;
 import java.util.stream.*;
 import java.util.function.*;
-
+import java.util.IntSummaryStatistics;
+import java.util.Optional;
+import java.util.function.Function;
 
 public class JudgePhase implements Phase {
     JudgePhase(GameSystem s) {
-        System.out.print("JudgePhase: ");
+        //System.out.print("JudgePhase: ");
         s.selectionArea = Area.None;
     }
 
     boolean isSkirmish(List<UnitCard> cards) {
-        int min = 100;
-        int max = -100;
+        IntSummaryStatistics stat = cards.stream()
+                .mapToInt(c -> c.number)
+                .distinct()
+                .summaryStatistics();
 
-        for (UnitCard c : cards) {
-            if (min == c.number || max == c.number) return false;
-
-            if (min > c.number) min = c.number;
-            if (max < c.number) max = c.number;
-        }
-
-        return max - min + 1 == cards.size();
+        return stat.getMax() - stat.getMin() + 1 == cards.size() &&
+                stat.getCount() == cards.size();
     }
 
     boolean isBattalion(List<UnitCard> cards) {
-        OptionalInt max = cards.stream()
-        .mapToInt(c -> c.suit)
-        .max();
-        OptionalInt min = cards.stream()
-        .mapToInt(c -> c.suit)
-        .min();
-
-        return max.getAsInt() == min.getAsInt();
+        return cards.stream().map(c -> c.suit).distinct().count() == 1;
     }
 
     boolean isPhalanx(List<UnitCard> cards) {
-        OptionalInt max = cards.stream()
-        .mapToInt(c -> c.number)
-        .max();
-        OptionalInt min = cards.stream()
-        .mapToInt(c -> c.number)
-        .min();
-
-        return max.getAsInt() == min.getAsInt();
+        return cards.stream().map(c -> c.number).distinct().count() == 1;
     }
 
-    int alterLeader(List<Card> cards, ToIntFunction<List<Card>> func) {
-        Card leader = null;
-        for (Card c : cards) {
-            if (c instanceof UnitCard) continue;
+    Stream<List<Card>> substituteLeader(List<Card> cards) {
+        List<List<Card>> result = new ArrayList<List<Card>>();
 
-            Tactics k = ((TacticsCard)c).kind;
-            if (k == Tactics.Darius || k == Tactics.Alexander) {
-                leader = (TacticsCard)c;
-            }
+        Optional<TacticsCard> leader = cards.stream()
+                .filter(c -> c instanceof TacticsCard)
+                .map(c -> (TacticsCard)c)
+                .filter(c -> c.kind == Tactics.Darius || c.kind == Tactics.Alexander)
+                .findAny();
+
+        if (!leader.isPresent()) {
+            result.add(cards);
+            return result.stream();
         }
-        if (leader == null) return func.applyAsInt(cards);
-        cards.remove(leader);
-
-        int max = 0;
+        cards.remove(leader.get());
 
         for (int suit = 0; suit < UnitCard.NumberOfSuits; suit++) {
             for (int number = 1; number <= UnitCard.MaximumNumber; number++) {
                 UnitCard c = new UnitCard(suit, number);
                 cards.add(c);
-                int str = func.applyAsInt(cards);
-                if (str > max) {
-                    max = str;
-                }
+                result.add(new ArrayList<Card>(cards));
                 cards.remove(c);
             }
         }
 
-        cards.add(leader);
+        cards.add(leader.get());
 
-        return max;
+        return result.stream();
     }
 
-    int alterCompanion(List<Card> cards, ToIntFunction<List<Card>> func) {
-        Card companion = null;
-        for (Card c : cards) {
-            if (c instanceof UnitCard) continue;
+    Stream<List<Card>> substituteShield(List<Card> cards) {
+        List<List<Card>> result = new ArrayList<List<Card>>();
 
-            Tactics k = ((TacticsCard)c).kind;
-            if (k == Tactics.Companion) {
-                companion = (TacticsCard)c;
-            }
+        Optional<TacticsCard> shield = cards.stream()
+                .filter(c -> c instanceof TacticsCard)
+                .map(c -> (TacticsCard)c)
+                .filter(c -> c.kind == Tactics.Shield)
+                .findAny();
+
+        if (!shield.isPresent()) {
+            result.add(cards);
+            return result.stream();
         }
-        if (companion == null) return func.applyAsInt(cards);
-        cards.remove(companion);
-
-        int max = 0;
-
-        for (int suit = 0; suit < UnitCard.NumberOfSuits; suit++) {
-            UnitCard c = new UnitCard(suit, 8);
-            cards.add(c);
-            int str = func.applyAsInt(cards);
-            if (str > max) max = str;
-            cards.remove(c);
-        }
-
-        cards.add(companion);
-
-        return max;
-    }
-
-    int alterShield(List<Card> cards, ToIntFunction<List<Card>> func) {
-        Card shield = null;
-        for (Card c : cards) {
-            if (c instanceof UnitCard) continue;
-
-            Tactics k = ((TacticsCard)c).kind;
-            if (k == Tactics.Shield) {
-                shield = (TacticsCard)c;
-            }
-        }
-        if (shield == null) return func.applyAsInt(cards);
-        cards.remove(shield);
-
-        int max = 0;
+        cards.remove(shield.get());
 
         for (int suit = 0; suit < UnitCard.NumberOfSuits; suit++) {
             for (int number = 1; number <= 3; number++) {
                 UnitCard c = new UnitCard(suit, number);
                 cards.add(c);
-                int str = func.applyAsInt(cards);
-                if (str > max) {
-                    max = str;
-                }
+                result.add(new ArrayList<Card>(cards));
                 cards.remove(c);
             }
         }
 
-        cards.add(shield);
+        cards.add(shield.get());
 
-        return max;
+        return result.stream();
+    }
+
+    Stream<List<Card>> substituteCompanion(List<Card> cards) {
+        List<List<Card>> result = new ArrayList<List<Card>>();
+
+        Optional<TacticsCard> companion = cards.stream()
+                .filter(c -> c instanceof TacticsCard)
+                .map(c -> (TacticsCard)c)
+                .filter(c -> c.kind == Tactics.Companion)
+                .findAny();
+
+        if (!companion.isPresent()) {
+            result.add(cards);
+            return result.stream();
+        }
+        cards.remove(companion.get());
+
+        for (int suit = 0; suit < UnitCard.NumberOfSuits; suit++) {
+            UnitCard c = new UnitCard(suit, 8);
+            cards.add(c);
+            result.add(new ArrayList<Card>(cards));
+            cards.remove(c);
+        }
+
+        cards.add(companion.get());
+
+        return result.stream();
     }
 
     int strengthOfSquad(List<UnitCard> squad) {
@@ -158,13 +135,13 @@ public class JudgePhase implements Phase {
     }
 
     int alterTactics(List<Card> cards, ToIntFunction<List<UnitCard>> func) {
-        return alterLeader(cards, c1 ->
-            alterCompanion(c1, c2 ->
-                alterShield(c2, c3 ->
-                    func.applyAsInt(c3.stream().map(c -> (UnitCard)c).collect(Collectors.toList()))
-                    )
-                )
-            );
+        return substituteCompanion(cards)
+                .flatMap(this::substituteShield)
+                .flatMap(this::substituteLeader)
+                .map(s -> s.stream().map(c -> (UnitCard)c).collect(Collectors.toList()))
+                .mapToInt(func)
+                .max()
+                .getAsInt();
     }
 
     int strengthOfCards(List<Card> cards) {
