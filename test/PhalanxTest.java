@@ -3,12 +3,16 @@ import org.junit.*;
 import java.util.*;
 
 public class PhalanxTest {
-	UnitCard c(int s, int n) {
-		return new UnitCard(s, n);
-	}
+	List<UnitCard> squad(Integer... cards) {
+		List<UnitCard> squad = new ArrayList<UnitCard>();
 
-	List<Card> squad(Card... cards) {
-		return Arrays.asList(cards);
+		for (Integer i : cards) {
+			int suit = i / 10;
+			int number = (i % 10) > 0 ? (i % 10) : 10;
+			squad.add(new UnitCard(suit, number));
+		}
+
+		return squad;
 	}
 
 	JudgePhase phase;
@@ -18,13 +22,27 @@ public class PhalanxTest {
 
 	@Test
 	public void phalanx() {
-		assertTrue(phase.isPhalanx(squad(c(1,1),  c(2,1),  c(3,1))));
-		assertTrue(phase.isPhalanx(squad(c(0,10), c(2,10), c(5,10))));
+		assertTrue(phase.isPhalanx(squad(11, 21, 31)));
+		assertTrue(phase.isPhalanx(squad(00, 20, 50)));
 	}
 
 	@Test
 	public void phalanx_diffnum() {
-		assertFalse(phase.isPhalanx(squad(c(1,1),  c(2,2),  c(3,3))));
-		assertFalse(phase.isPhalanx(squad(c(1,1), c(1,2), c(1,3))));
+		assertFalse(phase.isPhalanx(squad(11, 22, 33)));
+		assertFalse(phase.isPhalanx(squad(11, 12, 13)));
+	}
+
+	@Test
+	public void phalanx_dup() {
+		assertTrue(phase.isPhalanx(squad(11, 11, 21)));
+		assertTrue(phase.isPhalanx(squad(33, 33, 33)));
+
+		assertFalse(phase.isPhalanx(squad(11, 11, 12)));
+	}
+
+	@Test
+	public void phalanx_forth() {
+		assertTrue(phase.isPhalanx(squad(11, 11, 11, 21)));
+		assertFalse(phase.isPhalanx(squad(11, 11, 22, 21)));
 	}
 }

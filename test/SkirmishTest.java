@@ -45,6 +45,7 @@ public class SkirmishTest {
 		assertFalse(phase.isSkirmish(squad(2, 2, 3)));
 		assertFalse(phase.isSkirmish(squad(1, 1, 3)));
 		assertFalse(phase.isSkirmish(squad(1, 3, 3)));
+		assertFalse(phase.isSkirmish(squad(1, 1, 1)));
 	}
 
 	@Test
