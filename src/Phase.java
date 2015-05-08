@@ -1,5 +1,5 @@
 import java.util.*;
-
+import java.util.Optional;
 
 public interface Phase {
     public void process(GameSystem s, Action act);
@@ -22,8 +22,8 @@ class DealPhase implements Phase {
         // delete all cards
         s.unitStack.clear();
         s.tacticsStack.clear();
-        s.players.get(0).cards.clear();
-        s.players.get(1).cards.clear();
+        s.player(0).cards.clear();
+        s.player(1).cards.clear();
         s.flags.clear();
         for (int i = 0; i < 9; i++) {
             s.flags.add(new Flag());
@@ -67,13 +67,15 @@ class SelectPhase implements Phase {
     }
 
     public void process(GameSystem s, Action act) {
-        assert act.card != null;
+        assert act.card.isPresent();
 
-        if (act.card instanceof UnitCard) {
-            s.phase = new StationPhase(s, act.card);
-        } else if (act.card instanceof TacticsCard) {
-            s.phase = new TacticsPhase();
-        }
+        act.card.ifPresent(card -> {
+            if (card instanceof UnitCard) {
+                s.phase = new StationPhase(s, card);
+            } else if (card instanceof TacticsCard) {
+                s.phase = new TacticsPhase();
+            }
+        });
     }
 }
 
@@ -89,15 +91,16 @@ class StationPhase implements Phase {
     }
 
     public void process(GameSystem s, Action act) {
-        final Flag flag = act.flag;
+        assert act.flag.isPresent();
 
-        assert flag != null;
-        if (flag.squads(s.turn).size() >= 3) return;
-        if (flag.owner != -1) return;
+        act.flag.ifPresent(flag -> {
+            if (flag.squads(s.turn).size() >= 3) return;
+            if (flag.owner != -1) return;
 
-        flag.squads(s.turn).add(card);
-        s.player(s.turn).cards.remove(card);
-        s.phase = new JudgePhase(s);
+            flag.squads(s.turn).add(card);
+            s.player(s.turn).cards.remove(card);
+            s.phase = new JudgePhase(s);
+        });
     }
 }
 
@@ -116,9 +119,11 @@ class DrawPhase implements Phase {
     }
 
     public void process(GameSystem s, Action act) {
-        assert act.card != null;
-        s.players.get(s.turn).cards.add(act.card);
-        s.phase = new ChangePlayerPhase(s);
+        assert act.card.isPresent();
+        act.card.ifPresent(card -> {
+            s.players.get(s.turn).cards.add(card);
+            s.phase = new ChangePlayerPhase(s);
+        });
     }
 }
 

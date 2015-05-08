@@ -1,11 +1,13 @@
+import java.util.Optional;
+
 class Action {
-	final Area selectedFrom;
-	final Card card;
-	final Flag flag;
+	final Optional<Area> selectedFrom;
+	final Optional<Card> card;
+	final Optional<Flag> flag;
 
 	Action(Area area, Card card, Flag flag) {
-		this.selectedFrom = area;
-		this.card = card;
-		this.flag = flag;
+		this.selectedFrom = Optional.ofNullable(area);
+		this.card = Optional.ofNullable(card);
+		this.flag = Optional.ofNullable(flag);
 	}
 }
