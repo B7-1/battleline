@@ -73,7 +73,7 @@ class SelectPhase implements Phase {
             if (card instanceof UnitCard) {
                 s.phase = new StationPhase(s, card);
             } else if (card instanceof TacticsCard) {
-                s.phase = new TacticsPhase();
+                s.phase = new TacticsPhase(s, (TacticsCard)card);
             }
         });
     }
@@ -94,7 +94,8 @@ class StationPhase implements Phase {
         assert act.flag.isPresent();
 
         act.flag.ifPresent(flag -> {
-            if (flag.squads(s.turn).size() >= 3) return;
+            int size = (flag.isMuddy) ? 4 : 3;
+            if (flag.cards.get(s.turn).size() >= size) return;
             if (flag.owner != -1) return;
 
             flag.squads(s.turn).add(card);
@@ -105,9 +106,53 @@ class StationPhase implements Phase {
 }
 
 class TacticsPhase implements Phase {
+    final TacticsCard card;
+
+    TacticsPhase(GameSystem s, TacticsCard card) {
+        this.card = card;
+
+        if (card.isMoral() || card.isEnvironment()) {
+            s.selectionArea = Area.Flags;
+        } else {
+            switch (card.kind) {
+                case Tactics.Scout:
+                    assert false;
+                    break;
+                case Tactics.Redeploy:
+                    assert false;
+                    break;
+                case Tactics.Deserter:
+                    assert false;
+                    break;
+                case Tactics.Traitor:
+                    assert false;
+                    break;
+            }
+        }
+    }
+
     public void process(GameSystem s, Action act) {
-        assert false;
-        s.phase = new JudgePhase(s);
+        if (card.isMoral()) {
+            act.flag.ifPresent(flag -> {
+                int size = (flag.isMuddy) ? 4 : 3;
+                if (flag.cards.get(s.turn).size() >= size) return;
+                if (flag.owner != -1) return;
+
+                flag.squads(s.turn).add(card);
+                s.player(s.turn).cards.remove(card);
+                s.phase = new JudgePhase(s);
+            });
+        } else if (card.isEnvironment()) {
+            act.flag.ifPresent(flag -> {
+                if (card.kind == Tactics.Mud) {
+                    flag.isMuddy = true;
+                } else if (card.kind == Tactics.Fog) {
+                    flag.isFogging = true;
+                }
+                s.phase = new JudgePhase(s);
+            });
+        }
+        
     }
 }
 

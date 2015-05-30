@@ -151,8 +151,10 @@ public class JudgePhase implements Phase {
     public void process(GameSystem s, Action act) {
         for (Flag f : s.flags) {
             if (f.owner != -1) continue;
-            if (f.squads(0).size() < 3) continue;
-            if (f.squads(1).size() < 3) continue;
+
+            int size = (f.isMuddy) ? 4 : 3;
+            if (f.squads(0).size() < size) continue;
+            if (f.squads(1).size() < size) continue;
 
             int p1 = strengthOfCards(f.squads(0));
             int p2 = strengthOfCards(f.squads(1));
@@ -160,6 +162,12 @@ public class JudgePhase implements Phase {
                 p1 += 1;
             } else {
                 p2 += 1;
+            }
+
+            // only unit card strength.
+            if (f.isFogging) {
+                p1 %= 1000;
+                p2 %= 1000;
             }
 
             assert p1 != p2;

@@ -53,9 +53,15 @@ class CUI {
 					for (int i = 0; i < s.flags.size(); i++) {
 						Flag f = s.flag(i);
 						System.out.print(" " + f.cards.get(0));
-						System.out.print((f.owner == 0) ? "|" : ":");
-						System.out.print(i);
-						System.out.print((f.owner == 1) ? "|" : ":");
+						if (f.owner == -1) {
+							System.out.print(":");
+							System.out.print(i);
+							System.out.print(":");
+						} else {
+							System.out.print((f.owner == 0) ? "|" : " ");
+							System.out.print(" ");
+							System.out.print((f.owner == 1) ? "|" : " ");
+						}
 						System.out.println(f.cards.get(1));
 					}
 					System.out.println();
@@ -73,7 +79,7 @@ class CUI {
 					if (selectedIndex == 0)
 						s.selectStack(s.unitStack);
 					else if (selectedIndex == 1)
-						s.selectStack(s.unitStack);
+						s.selectStack(s.tacticsStack);
 				}
 			}
 		} catch (Exception e) {

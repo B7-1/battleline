@@ -10,6 +10,25 @@ public class TacticsCard extends Card {
 	public String toString() {
 		return kind.name();
 	}
+
+	Boolean isMoral() {
+		return kind == Tactics.Alexander ||
+			kind == Tactics.Darius ||
+			kind == Tactics.Companion ||
+			kind == Tactics.Shield;
+	}
+
+	Boolean isEnvironment() {
+		return kind == Tactics.Fog ||
+			kind == Tactics.Mud;
+	}
+
+	Boolean isGuile() {
+		return kind == Tactics.Scout ||
+			kind == Tactics.Redeploy ||
+			kind == Tactics.Deserter ||
+			kind == Tactics.Traitor;
+	}
 }
 
 enum Tactics {
