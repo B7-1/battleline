@@ -148,35 +148,57 @@ public class JudgePhase implements Phase {
         return alterTactics(new ArrayList<Card>(cards), this::strengthOfSquad);
     }
 
+    IntSummaryStatistics estimateStrengthOfCards(List<Card> cards, List<UnitCard> candidates, int rest, boolean fog) {
+        IntSummaryStatistics result = new IntSummaryStatistics();
+
+        if (rest == 0) {
+            int score = strengthOfCards(cards);
+            if (fog) score %= 1000;
+            result.accept(score);
+        } else {
+            for (Card c : candidates) {
+                if (cards.contains(c)) continue;
+                cards.add(c);
+                result.combine(estimateStrengthOfCards(cards, candidates, rest - 1, fog));
+                cards.remove(c);
+            }
+        }
+
+        return result;
+    }
+
     public void process(GameSystem s, Action act) {
+        List<UnitCard> remainder = s.remainderOfCards();
+        IntSummaryStatistics emptyStat = null;
+
         for (Flag f : s.flags) {
             if (f.owner != -1) continue;
 
             int size = (f.isMuddy) ? 4 : 3;
-            if (f.squads(0).size() < size) continue;
-            if (f.squads(1).size() < size) continue;
 
-            int p1 = strengthOfCards(f.squads(0));
-            int p2 = strengthOfCards(f.squads(1));
-            if (f.forestaller == 0) {
-                p1 += 1;
-            } else {
-                p2 += 1;
+            IntSummaryStatistics[] stats = new IntSummaryStatistics[2];
+            for (int j = 0; j < 2; j++) {
+                List<Card> squads = f.squads(j);
+                int rest = size - squads.size();
+
+                if (squads.isEmpty() && !f.isMuddy) {
+                    if (emptyStat == null) emptyStat = estimateStrengthOfCards(squads, remainder, rest, f.isFogging);
+                    stats[j] = emptyStat;
+                } else {
+                    stats[j] = estimateStrengthOfCards(squads, remainder, rest, f.isFogging);
+                }
             }
 
-            // only unit card strength.
-            if (f.isFogging) {
-                p1 %= 1000;
-                p2 %= 1000;
-            }
+            int p1 = (f.forestaller == 0) ? 1 : 0;
+            int p2 = (f.forestaller == 1) ? 1 : 0;
 
-            assert p1 != p2;
-            if (p1 > p2) {
+            if (stats[0].getMin() + p1 > stats[1].getMax() + p2) {
                 f.owner = 0;
-            } else {
+            } else if (stats[0].getMax() + p1 < stats[1].getMin() + p2) {
                 f.owner = 1;
             }
         }
+
         s.phase = new DrawPhase(s);
     }
 }

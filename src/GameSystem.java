@@ -1,5 +1,5 @@
 import java.util.*;
-
+import java.util.stream.Collectors;
 
 public class GameSystem {
 	/* @NonNull */ Phase phase;
@@ -47,6 +47,19 @@ public class GameSystem {
 	void step() {
 		Action act = new Action(Area.None, null, null);
 		phase.process(this, act);
+	}
+
+	List<UnitCard> remainderOfCards() {
+		List<UnitCard> result = new ArrayList<UnitCard>();
+		result.addAll(unitStack);
+		for (Player player : players) {
+			List<UnitCard> cards = player.cards.stream()
+				.filter(c -> c instanceof UnitCard)
+				.map(c -> (UnitCard)c)
+				.collect(Collectors.toList());
+			result.addAll(cards);
+		}
+		return result;
 	}
 }
 
