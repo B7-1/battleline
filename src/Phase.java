@@ -94,9 +94,7 @@ class StationPhase implements Phase {
         assert act.flag.isPresent();
 
         act.flag.ifPresent(flag -> {
-            int size = (flag.isMuddy) ? 4 : 3;
-            if (flag.cards.get(s.turn).size() >= size) return;
-            if (flag.owner != -1) return;
+            if (!flag.canPlaceCardOn(s.turn)) return;
 
             flag.squads(s.turn).add(card);
             s.player(s.turn).cards.remove(card);
@@ -107,6 +105,7 @@ class StationPhase implements Phase {
 
 class TacticsPhase implements Phase {
     final TacticsCard card;
+    Card selectedCard;
 
     TacticsPhase(GameSystem s, TacticsCard card) {
         this.card = card;
@@ -115,17 +114,17 @@ class TacticsPhase implements Phase {
             s.selectionArea = Area.Flags;
         } else {
             switch (card.kind) {
-                case Tactics.Scout:
+                case Scout:
                     assert false;
                     break;
-                case Tactics.Redeploy:
-                    assert false;
+                case Redeploy:
+                    s.selectionArea = Area.MySquads;
                     break;
-                case Tactics.Deserter:
-                    assert false;
+                case Deserter:
+                    s.selectionArea = Area.OpponentSquads;
                     break;
-                case Tactics.Traitor:
-                    assert false;
+                case Traitor:
+                    s.selectionArea = Area.OpponentSquads;
                     break;
             }
         }
@@ -134,9 +133,7 @@ class TacticsPhase implements Phase {
     public void process(GameSystem s, Action act) {
         if (card.isMoral()) {
             act.flag.ifPresent(flag -> {
-                int size = (flag.isMuddy) ? 4 : 3;
-                if (flag.cards.get(s.turn).size() >= size) return;
-                if (flag.owner != -1) return;
+                if (!flag.canPlaceCardOn(s.turn)) return;
 
                 flag.squads(s.turn).add(card);
                 s.player(s.turn).cards.remove(card);
@@ -151,8 +148,51 @@ class TacticsPhase implements Phase {
                 }
                 s.phase = new JudgePhase(s);
             });
+        } else if (card.isGuile()) {
+            switch (card.kind) {
+                case Scout:
+                    assert false;
+                    break;
+                case Redeploy:
+                    act.card.ifPresent(card -> {
+                        Flag flag = s.flagContainsCard(card);
+                        flag.cards.get(s.turn).remove(card);
+
+                        selectedCard = card;
+                        s.selectionArea = Area.Flags;
+                    })
+                    act.flag.ifPresent(flag -> {
+                        if (!flag.canPlaceCardOn(s.turn)) return;
+
+                        flag.squads(s.turn).add(selectedCard);
+                        s.phase = new JudgePhase(s);
+                    });
+                    break;
+                case Deserter:
+                    act.card.ifPresent(card -> {
+                        Flag flag = s.flagContainsCard(card);
+                        flag.cards.get(0).remove(card);
+                        flag.cards.get(1).remove(card);
+                    });
+                    break;
+                case Traitor:
+                    act.card.ifPresent(card -> {
+                        Flag flag = s.flagContainsCard(card);
+                        flag.cards.get(0).remove(card);
+                        flag.cards.get(1).remove(card);
+
+                        selectedCard = card;
+                        s.selectionArea = Area.Flags;
+                    })
+                    act.flag.ifPresent(flag -> {
+                        if (!flag.canPlaceCardOn(s.turn)) return;
+
+                        flag.squads(s.turn).add(selectedCard);
+                        s.phase = new JudgePhase(s);
+                    });
+                    break;
+            }
         }
-        
     }
 }
 

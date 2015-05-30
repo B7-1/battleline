@@ -49,6 +49,15 @@ public class GameSystem {
 		phase.process(this, act);
 	}
 
+	Flag flagContainsCard(Card c) {
+		for (Flag f : flags) {
+			for (List<Card> cards : f.cards) {
+				if (cards.contains(c)) return f;
+			}
+		}
+		return null;
+	}
+
 	List<UnitCard> remainderOfCards() {
 		List<UnitCard> result = new ArrayList<UnitCard>();
 		result.addAll(unitStack);

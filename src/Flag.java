@@ -22,4 +22,9 @@ class Flag {
 		assert 0 <= i && i < cards.size();
 		return cards.get(i);
 	}
+
+	boolean canPlaceCardOn(int idx) {
+		int size = isMuddy ? 4 : 3;
+		return (cards.get(idx).size() < size) && (owner == -1);
+	}
 }
