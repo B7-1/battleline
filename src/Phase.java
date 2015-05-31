@@ -160,7 +160,7 @@ class TacticsPhase implements Phase {
 
                         selectedCard = card;
                         s.selectionArea = Area.Flags;
-                    })
+                    });
                     act.flag.ifPresent(flag -> {
                         if (!flag.canPlaceCardOn(s.turn)) return;
 
@@ -183,7 +183,7 @@ class TacticsPhase implements Phase {
 
                         selectedCard = card;
                         s.selectionArea = Area.Flags;
-                    })
+                    });
                     act.flag.ifPresent(flag -> {
                         if (!flag.canPlaceCardOn(s.turn)) return;
 
