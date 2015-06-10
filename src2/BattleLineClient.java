@@ -30,10 +30,12 @@ public class BattleLineClient {
 	
 	public static void main(String[] args)
 					throws IOException {
-		InetAddress addr = InetAddress.getByName("localhost");
+		System.out.print("ƒzƒXƒg–¼‚ð“ü—Í‚µ‚Ä‚Ë:");
+		String Name = input.readLine();
+		InetAddress addr = InetAddress.getByName(Name);
 		System.out.println("addr = " + addr);
 		Socket socket = new Socket(addr, BattleLineServer.PORT);
-//		try {
+		try {
 			System.out.println("socket = " + socket);
 			in_box2 = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			out_box2 = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
@@ -49,9 +51,9 @@ public class BattleLineClient {
 			
 			//CUIclient ui = new CUIclient(new GameSystem());
 			//ui.main();//launch(args);
-//		} finally {
+		} finally {
 			System.out.println("closing...");
 			socket.close();
-//		}
+		}
 	}
 }
