@@ -16,10 +16,10 @@ import java.awt.Color;
 class GUIField extends JPanel{
 	GUIField(){//Flag card[0]が自分で card[1]相手
 
-		setBackground(Color.BLACK);
+		setBackground(Color.GRAY);
 		//btn11.setBackground(Color.ORANGE);
 		//btn10.setBackground(Color.BLUE);
-		setLayout(new GridLayout(1,10));
+		setLayout(new GridLayout(1,11));
 
 
 	}

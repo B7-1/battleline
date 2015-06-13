@@ -10,9 +10,16 @@ import javax.swing.JFrame;
 import javax.swing.JButton;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.border.LineBorder;
+import javax.swing.border.EtchedBorder;
+
 
 import java.awt.Color;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.*;
+
+
 
 
 class CUI /*implements ActionListener*/{
@@ -52,18 +59,47 @@ class CUI /*implements ActionListener*/{
 			gui.add(cards1);
 			gui.add(cards2);
 			gui.add(cards3);
-			gui.add(cards4);
-
+			
+			JLabel[] opponent_card=new JLabel[7]; 
 			JButton[] flagbtn = new JButton[9];
 			JButton[] btn = new JButton[7];
 			JButton[] cardstack= new JButton[2];
 			JLabel[] flag= new JLabel[9];
+			JLabel[] opponent_flag=new JLabel[9];
+			JLabel label1=new JLabel();
+			JLabel label2=new JLabel();
+			JLabel label3=new JLabel();
+			JLabel label4=new JLabel();
+
+
+			for(Integer i=0;i<7;i++){
+				opponent_card[i]=new JLabel();
+				ImageIcon icon =new ImageIcon("./image/cardimage.png");
+			 	opponent_card[i].setIcon(icon);
+			 	EtchedBorder border = new EtchedBorder(EtchedBorder.RAISED, Color.white, Color.white);
+    			opponent_card[i].setBorder(border);
+				cards1.add(opponent_card[i]);
+			}
+
+			cards2.add(label3);
+			for(Integer i=0;i<9;i++){
+			 	opponent_flag[i]=new JLabel();
+			 	opponent_flag[i].setBackground(Color.GRAY);
+				opponent_flag[i].setOpaque(true);
+				cards2.add(opponent_flag[i]);
+			}
+			cards2.add(label4);
 
 			for(Integer i=0;i<2;i++){
 				cardstack[i]=new JButton();
 				cardstack[i].addActionListener(
 					e->selectcardstack=Integer.parseInt(e.getActionCommand()));
 				cardstack[i].setActionCommand(i.toString());
+				ImageIcon icon =new ImageIcon("./image/cardimage.png");
+			 	cardstack[i].setIcon(icon);
+			 	EtchedBorder border = new EtchedBorder(EtchedBorder.RAISED, Color.white, Color.white);
+    			cardstack[i].setBorder(border);
+
 				cardstack[i].setOpaque(true);
 			}
 			cardstack[0].setText("unit");
@@ -77,17 +113,16 @@ class CUI /*implements ActionListener*/{
 			cards3.add(cardstack[1]);
 
 
-			JLabel label1=new JLabel();
 			cards4.add(label1);
 			for(Integer i=0;i<9;i++){
 				flagbtn[i]=new JButton();
 				flagbtn[i].addActionListener(
 					e->selectedarea=Integer.parseInt(e.getActionCommand()));
 				flagbtn[i].setActionCommand(i.toString());
+				flagbtn[i].setBackground(Color.GRAY);
 				flagbtn[i].setOpaque(true);
 				cards4.add(flagbtn[i]);
 			}
-			JLabel label2=new JLabel();
 			cards4.add(label2);
 
 			for(Integer i=0;i<7;i++){
@@ -115,9 +150,10 @@ class CUI /*implements ActionListener*/{
 					//contentPane.add(panel, BorderLayout.CENTER);
 					for (int i = 0; i < s.player(s.turn).cards.size(); i++) {
 						Card c = s.player(s.turn).cards.get(i);
-						//ImageIcon icon = new ImageIcon("./AS-24-1S.jpg");
-						btn[i].setText(c.toString());
-
+						ImageIcon icon = new ImageIcon("./image/"+c.toString()+".png");
+						btn[i].setIcon(icon);
+						EtchedBorder border = new EtchedBorder(EtchedBorder.RAISED, Color.black, Color.black);
+    					btn[i].setBorder(border);
 					}
 
 
@@ -135,13 +171,7 @@ class CUI /*implements ActionListener*/{
 				} else if (s.selectionArea == Area.Flags) {
 					//カード配置場所
 					System.out.println("put card on one of the flags...");
-					for (int i = 0; i < s.flags.size(); i++) {
-						Flag f = s.flag(i);
-						f.cards.get(1);
-						
-
-						flagbtn[i].setText(f.cards.get(0).toString());
-					}
+					
 					
 					if(selectedarea!=-1){
 						System.out.println(selectedarea);
@@ -159,6 +189,12 @@ class CUI /*implements ActionListener*/{
 					System.out.println("draw a card from...");
 					//選択オプション
 					System.out.println("[0] unit, [1] tactics");
+
+					for (int i = 0; i < s.flags.size(); i++) {
+						Flag f = s.flag(i);
+						opponent_flag[i].setText(f.cards.get(1).toString());
+						flagbtn[i].setText(f.cards.get(0).toString());
+					}
 					if(selectcardstack!=-1){
 						final int selectedIndex = selectcardstack;
 						assert 0 <= selectedIndex && selectedIndex <= 1;

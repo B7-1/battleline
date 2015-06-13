@@ -16,7 +16,7 @@ import java.awt.Color;
 class GUICenter extends JPanel{
 	GUICenter(){
 
-		setBackground(Color.BLACK);
+		setBackground(Color.GRAY);
 		//btn11.setBackground(Color.ORANGE);
 		//btn10.setBackground(Color.BLUE);
 		setLayout(new GridLayout(1,11));

@@ -14,9 +14,11 @@ import java.awt.Color;
 
 class GUICard extends JPanel{
 	GUICard(){
-		setLayout(new GridLayout(0,7));
-		// add(btn1);
-		// add(btn2);
+		setLayout(new GridLayout(0,11));
+		JLabel label1=new JLabel();
+		JLabel label2=new JLabel();
+		add(label1);
+		add(label2);
 		// add(btn3);
 		// add(btn4);
 		// add(btn5);

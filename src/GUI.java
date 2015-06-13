@@ -30,8 +30,9 @@ class GUI extends JFrame{
 		// add(mycard3);
 		// add(mycard4);
 		// add(mycard5);
+		setBackground(Color.GREEN);
 
-		setBounds(100, 100, 300, 250);		
+		setBounds(100, 100, 1200, 750);		
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
