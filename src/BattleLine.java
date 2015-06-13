@@ -8,14 +8,19 @@ import java.util.*;
 import java.io.*;
 import javax.swing.JFrame;
 import javax.swing.JButton;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 
 import java.awt.Color;
 import java.awt.event.*;
 
 
-class CUI implements ActionListener{
+class CUI /*implements ActionListener*/{
 	GameSystem system;
-	Integer selectedcard=-1;
+	Integer selectedcard=-1;//どのカードを選択したか
+	Integer selectedarea=-1;//どこにカードを置いたか
+	Integer selectcardstack=-1;//引くカードを選択
+
 	CUI(GameSystem s) {
 		system = s;
 	}
@@ -30,12 +35,6 @@ class CUI implements ActionListener{
 			throw e;
 		}
 	}
-
-	public void actionPerformed(ActionEvent e){
-    	String s= e.getActionCommand();
-    	selectedcard= Integer.parseInt(s);
-    	System.out.println(selectedcard);//印//
-  	}
 
 	void main() {
 		try {
@@ -54,78 +53,124 @@ class CUI implements ActionListener{
 			gui.add(cards2);
 			gui.add(cards3);
 			gui.add(cards4);
-			//gui.add(cards5);
-    		//gui.setVisible(true);
+
+			JButton[] flagbtn = new JButton[9];
+			JButton[] btn = new JButton[7];
+			JButton[] cardstack= new JButton[2];
+			JLabel[] flag= new JLabel[9];
+
+			for(Integer i=0;i<2;i++){
+				cardstack[i]=new JButton();
+				cardstack[i].addActionListener(
+					e->selectcardstack=Integer.parseInt(e.getActionCommand()));
+				cardstack[i].setActionCommand(i.toString());
+				cardstack[i].setOpaque(true);
+			}
+			cardstack[0].setText("unit");
+			cardstack[1].setText("tactics");
+
+			cards3.add(cardstack[0]);
+			for(Integer i=0;i<9;i++){
+				flag[i]=new JLabel();
+				cards3.add(flag[i]);
+			}
+			cards3.add(cardstack[1]);
+
+
+			JLabel label1=new JLabel();
+			cards4.add(label1);
+			for(Integer i=0;i<9;i++){
+				flagbtn[i]=new JButton();
+				flagbtn[i].addActionListener(
+					e->selectedarea=Integer.parseInt(e.getActionCommand()));
+				flagbtn[i].setActionCommand(i.toString());
+				flagbtn[i].setOpaque(true);
+				cards4.add(flagbtn[i]);
+			}
+			JLabel label2=new JLabel();
+			cards4.add(label2);
+
+			for(Integer i=0;i<7;i++){
+				btn[i]=new JButton();
+				btn[i].addActionListener(
+					e->selectedcard= Integer.parseInt(e.getActionCommand()));
+				btn[i].setActionCommand(i.toString());
+				btn[i].setOpaque(true);
+				cards5.add(btn[i]);
+			}
+
+			gui.add(cards4);
+			gui.add(cards5);
+    		gui.setVisible(true);
     		//GUI部分終了
 
 			while (true) {
 				if (s.selectionArea == Area.None) {
 					System.out.println();
 					s.step();
-
 				} else if (s.selectionArea == Area.MyHand || s.selectionArea == Area.OpponentHand) {
 					//カード選択部分
-					System.out.println("select card from...");
+					//System.out.println("select card from...");
 					//Container contentPane = gameframe.getContentPane();
 					//contentPane.add(panel, BorderLayout.CENTER);
 					for (int i = 0; i < s.player(s.turn).cards.size(); i++) {
 						Card c = s.player(s.turn).cards.get(i);
-						System.out.print(" [" + i + "]" + c.toString());
-						GUICardButton btn=new GUICardButton(c);
-						btn.setForeground(Color.BLUE);
-						btn.setBackground(Color.RED);
-						btn.setName(c.toString());
-						btn.addActionListener(this);
-						btn.setActionCommand(c.toString());
-						btn.setOpaque(true);
-						cards5.add(btn);
+						//ImageIcon icon = new ImageIcon("./AS-24-1S.jpg");
+						btn[i].setText(c.toString());
+
 					}
 
-					gui.add(cards5);
-					gui.setVisible(true);
-					System.out.println();
 
-
-					final Player player = s.player(s.turn);
-					final int selectedIndex =selectedcard;
-					selectedcard=-1;
-					assert 0 <= selectedIndex && selectedIndex < player.cards.size();
-					s.selectCard(player.cards.get(selectedIndex));
+					if(selectedcard!=-1){
+						System.out.println(selectedcard);
+						final Player player = s.player(s.turn);
+						final int selectedIndex =selectedcard;
+						assert 0 <= selectedIndex && selectedIndex < player.cards.size();
+						s.selectCard(player.cards.get(selectedIndex));
+						System.out.println();
+						selectedcard=-1;//どのカードを選択したか
+						selectedarea=-1;//どこにカードを置いたか
+						selectcardstack=-1;//引くカードを選択
+					}
 				} else if (s.selectionArea == Area.Flags) {
 					//カード配置場所
 					System.out.println("put card on one of the flags...");
 					for (int i = 0; i < s.flags.size(); i++) {
 						Flag f = s.flag(i);
-						System.out.print(" " + f.cards.get(0));
-						if (f.owner == -1) {
-							System.out.print(":");
-							System.out.print(i);
-							System.out.print(":");
-						} else {
-							System.out.print((f.owner == 0) ? "|" : " ");
-							System.out.print(" ");
-							System.out.print((f.owner == 1) ? "|" : " ");
-						}
-						System.out.println(f.cards.get(1));
-					}
-					System.out.println();
+						f.cards.get(1);
+						
 
-					final int selectedIndex = readInt(in);//読み込み
-					assert 0 <= selectedIndex && selectedIndex < s.flags.size();
-					s.selectFlag(s.flag(selectedIndex));//s
+						flagbtn[i].setText(f.cards.get(0).toString());
+					}
+					
+					if(selectedarea!=-1){
+						System.out.println(selectedarea);
+						final int selectedIndex = selectedarea;
+						assert 0 <= selectedIndex && selectedIndex < s.flags.size();
+						s.selectFlag(s.flag(selectedIndex));
+						selectedcard=-1;//どのカードを選択したか
+						selectedarea=-1;//どこにカードを置いたか
+						selectcardstack=-1;//引くカードを選択
+
+					}
 
 				} else if (s.selectionArea == Area.CardStack) {
 					//山札からカードを引く
 					System.out.println("draw a card from...");
 					//選択オプション
 					System.out.println("[0] unit, [1] tactics");
+					if(selectcardstack!=-1){
+						final int selectedIndex = selectcardstack;
+						assert 0 <= selectedIndex && selectedIndex <= 1;
+						if (selectedIndex == 0)
+							s.selectStack(s.unitStack);
+						else if (selectedIndex == 1)
+							s.selectStack(s.tacticsStack);
+						selectedcard=-1;//どのカードを選択したか
+						selectedarea=-1;//どこにカードを置いたか
+						selectcardstack=-1;//引くカードを選択
 
-					final int selectedIndex = readInt(in);
-					assert 0 <= selectedIndex && selectedIndex <= 1;
-					if (selectedIndex == 0)
-						s.selectStack(s.unitStack);
-					else if (selectedIndex == 1)
-						s.selectStack(s.tacticsStack);
+					}
 				}
 			}
 

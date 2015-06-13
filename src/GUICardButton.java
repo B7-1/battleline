@@ -14,8 +14,7 @@ import java.awt.Dimension;
 import java.awt.Color;
 
 class GUICardButton extends JButton{
-	GUICardButton(Card c){
-		setName(c.toString());
+	GUICardButton(){
 		setOpaque(true);
 	}
 }
