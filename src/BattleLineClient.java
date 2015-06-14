@@ -24,7 +24,7 @@ public class BattleLineClient {
 	
 	public static void main(String[] args)
 					throws IOException {
-		System.out.print("ƒzƒXƒg–¼‚ð“ü—Í‚µ‚Ä‚Ë:");
+		System.out.print("初期入力:");
 		String Name = input.readLine();
 		InetAddress addr = InetAddress.getByName(Name);
 		System.out.println("addr = " + addr);
