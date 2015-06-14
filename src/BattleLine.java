@@ -6,6 +6,7 @@ import javafx.scene.layout.BorderPane;
 import java.util.*;
 
 import java.io.*;
+import java.net.*;
 import javax.swing.JFrame;
 import javax.swing.JButton;
 import javax.swing.ImageIcon;
@@ -108,6 +109,8 @@ class CUI /*implements ActionListener*/{
 			cards3.add(cardstack[0]);
 			for(Integer i=0;i<9;i++){
 				flag[i]=new JLabel();
+				ImageIcon icon =new ImageIcon("./image/flag.png");
+				flag[i].setIcon(icon);
 				cards3.add(flag[i]);
 			}
 			cards3.add(cardstack[1]);
@@ -160,7 +163,11 @@ class CUI /*implements ActionListener*/{
 					if(selectedcard!=-1){
 						System.out.println(selectedcard);
 						final Player player = s.player(s.turn);
-						final int selectedIndex =selectedcard;
+						int selectedIndex =selectedcard;	//変更
+						if (s.turn == 1) {							//ƒNƒ‰ƒCƒAƒ“ƒg‘¤‚Ìƒ^[ƒ“
+							BattleLine.out_box.println("Input");	//ƒNƒ‰ƒCƒAƒ“ƒg‘¤‚©‚ç“ü—Í‚ð‹‚ß‚é
+							selectedIndex = Integer.parseInt(BattleLine.in_box.readLine());
+						}
 						assert 0 <= selectedIndex && selectedIndex < player.cards.size();
 						s.selectCard(player.cards.get(selectedIndex));
 						System.out.println();
@@ -175,7 +182,11 @@ class CUI /*implements ActionListener*/{
 					
 					if(selectedarea!=-1){
 						System.out.println(selectedarea);
-						final int selectedIndex = selectedarea;
+						int selectedIndex = selectedarea; //変更
+						if (s.turn == 1) {
+							BattleLine.out_box.println("Input");	//ƒNƒ‰ƒCƒAƒ“ƒg‘¤‚©‚ç“ü—Í‚ð‹‚ß‚é
+							selectedIndex = Integer.parseInt(BattleLine.in_box.readLine());
+						}
 						assert 0 <= selectedIndex && selectedIndex < s.flags.size();
 						s.selectFlag(s.flag(selectedIndex));
 						selectedcard=-1;//どのカードを選択したか
@@ -196,12 +207,21 @@ class CUI /*implements ActionListener*/{
 						flagbtn[i].setText(f.cards.get(0).toString());
 					}
 					if(selectcardstack!=-1){
-						final int selectedIndex = selectcardstack;
+						int selectedIndex = selectcardstack;//変更
 						assert 0 <= selectedIndex && selectedIndex <= 1;
-						if (selectedIndex == 0)
-							s.selectStack(s.unitStack);
-						else if (selectedIndex == 1)
-							s.selectStack(s.tacticsStack);
+						if(s.turn==0){
+							if (selectedIndex == 0)
+								s.selectStack(s.unitStack);
+							else if (selectedIndex == 1)
+								s.selectStack(s.tacticsStack);
+						}else if(s.turn ==1){
+							BattleLine.out_box.println("Input");	//ƒNƒ‰ƒCƒAƒ“ƒg‘¤‚©‚ç“ü—Í‚ð‹‚ß‚é
+							selectedIndex = Integer.parseInt(BattleLine.in_box.readLine());
+							if (selectedIndex == 0)
+								s.selectStack(s.unitStack);
+							else if (selectedIndex == 1)
+								s.selectStack(s.tacticsStack);
+						}
 						selectedcard=-1;//どのカードを選択したか
 						selectedarea=-1;//どこにカードを置いたか
 						selectcardstack=-1;//引くカードを選択
@@ -219,21 +239,29 @@ class CUI /*implements ActionListener*/{
 }
 
 public class BattleLine /* extends Application */ {
-	public static void main(String[] args) {
-		CUI ui = new CUI(new GameSystem());
-		ui.main();
-		//launch(args);
-	}
-
-	//@Override
-	public void start(Stage stage) throws Exception {
-		Label label = new Label("Hello JavaFX!");
-		BorderPane pane = new BorderPane();
-		pane.setCenter(label);
-		
-		Scene scene = new Scene(pane, 640, 480);
-		stage.setScene(scene);
-
-		stage.show();
+	public static final int PORT = 8080;
+	static BufferedReader in_box;
+	static PrintWriter out_box;
+	public static void main(String[] args) 
+		throws IOException {
+		ServerSocket s = new ServerSocket(PORT);
+		System.out.println("Started: " + s);
+		try {
+			Socket socket = s.accept();
+			try {
+				System.out.println(socket.getInputStream());
+				System.out.println(socket.getOutputStream());
+				System.out.println("Connection accepted: " + socket);
+				in_box = new BufferedReader(new InputStreamReader(socket.getInputStream()));	//ŽóM—p
+				out_box = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);	//‘—M—p
+				CUI ui = new CUI(new GameSystem());
+				ui.main();
+			}finally{
+				System.out.println("closing...");
+				socket.close();
+			}
+		}finally{
+			s.close();
+		}
 	}
 }
