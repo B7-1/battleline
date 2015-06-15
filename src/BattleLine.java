@@ -19,7 +19,7 @@ import java.awt.Color;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.*;
-
+import java.awt.GridLayout;
 
 
 
@@ -119,6 +119,7 @@ class CUI /*implements ActionListener*/{
 			cards4.add(label1);
 			for(Integer i=0;i<9;i++){
 				flagbtn[i]=new JButton();
+				//flagbtn[i].setLayout(new GridLayout(0,3));
 				flagbtn[i].addActionListener(
 					e->selectedarea=Integer.parseInt(e.getActionCommand()));
 				flagbtn[i].setActionCommand(i.toString());
@@ -204,6 +205,7 @@ class CUI /*implements ActionListener*/{
 					for (int i = 0; i < s.flags.size(); i++) {
 						Flag f = s.flag(i);
 						opponent_flag[i].setText(f.cards.get(1).toString());
+
 						flagbtn[i].setText(f.cards.get(0).toString());
 					}
 					if(selectcardstack!=-1){
