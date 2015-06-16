@@ -25,9 +25,9 @@ import java.awt.GridLayout;
 
 class CUI /*implements ActionListener*/{
 	GameSystem system;
-	Integer selectedcard=-1;//どのカードを選択したか
-	Integer selectedarea=-1;//どこにカードを置いたか
-	Integer selectcardstack=-1;//引くカードを選択
+	Integer selectedcard=-1;
+	Integer selectedarea=-1;
+	Integer selectcardstack=-1;
 
 	CUI(GameSystem s) {
 		system = s;
@@ -48,7 +48,7 @@ class CUI /*implements ActionListener*/{
 		try {
 			GameSystem s = system;
 			BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-			//GUI部分開始
+			
 			GUI gui = new GUI("BattleLine");
 			List<Card> co = new ArrayList<Card>();
 			GUICard cards1=new GUICard();
@@ -119,7 +119,7 @@ class CUI /*implements ActionListener*/{
 			cards4.add(label1);
 			for(Integer i=0;i<9;i++){
 				flagbtn[i]=new JButton();
-				//flagbtn[i].setLayout(new GridLayout(0,3));
+
 				flagbtn[i].addActionListener(
 					e->selectedarea=Integer.parseInt(e.getActionCommand()));
 				flagbtn[i].setActionCommand(i.toString());
@@ -141,75 +141,95 @@ class CUI /*implements ActionListener*/{
 			gui.add(cards4);
 			gui.add(cards5);
     		gui.setVisible(true);
-    		//GUI部分終了
+
 
 			while (true) {
 				if (s.selectionArea == Area.None) {
 					System.out.println();
 					s.step();
 				} else if (s.selectionArea == Area.MyHand || s.selectionArea == Area.OpponentHand) {
-					//カード選択部分
-					//System.out.println("select card from...");
-					//Container contentPane = gameframe.getContentPane();
-					//contentPane.add(panel, BorderLayout.CENTER);
-					for (int i = 0; i < s.player(s.turn).cards.size(); i++) {
-						Card c = s.player(s.turn).cards.get(i);
-						ImageIcon icon = new ImageIcon("./image/"+c.toString()+".png");
-						btn[i].setIcon(icon);
-						EtchedBorder border = new EtchedBorder(EtchedBorder.RAISED, Color.black, Color.black);
-    					btn[i].setBorder(border);
+
+					if(s.turn == 0){	//server's turn
+						for (int i = 0; i < s.player(s.turn).cards.size(); i++) {
+							Card c = s.player(s.turn).cards.get(i);
+							ImageIcon icon = new ImageIcon("./image/"+c.toString()+".png");
+														
+							btn[i].setIcon(icon);
+							EtchedBorder border = new EtchedBorder(EtchedBorder.RAISED, Color.black, Color.black);
+	    					btn[i].setBorder(border);
+						}
+					}
+
+					if(s.turn == 1 && BattleLine.card_Flag == 0){	//client's turn
+						BattleLine.out_box.println("handcards");// sign of giving hand cards
+						for (int i = 0; i < s.player(s.turn).cards.size(); i++) {
+							Card c = s.player(s.turn).cards.get(i);
+							ImageIcon icon = new ImageIcon("./image/"+c.toString()+".png");
+							
+							BattleLine.out_box.println(c.toString());//give hand cards
+							
+							btn[i].setIcon(icon);
+							EtchedBorder border = new EtchedBorder(EtchedBorder.RAISED, Color.black, Color.black);
+	    					btn[i].setBorder(border);
+						}
+						BattleLine.card_Flag = 1;
 					}
 
 
 					if(selectedcard!=-1){
 						System.out.println(selectedcard);
 						final Player player = s.player(s.turn);
-						int selectedIndex =selectedcard;	//変更
-						if (s.turn == 1) {							//ƒNƒ‰ƒCƒAƒ“ƒg‘¤‚Ìƒ^[ƒ“
-							BattleLine.out_box.println("Input");	//ƒNƒ‰ƒCƒAƒ“ƒg‘¤‚©‚ç“ü—Í‚ð‹‚ß‚é
+						int selectedIndex =selectedcard;
+						if (s.turn == 1) {
+							BattleLine.out_box.println("Input");
 							selectedIndex = Integer.parseInt(BattleLine.in_box.readLine());
 						}
 						assert 0 <= selectedIndex && selectedIndex < player.cards.size();
 						s.selectCard(player.cards.get(selectedIndex));
 						System.out.println();
-						selectedcard=-1;//どのカードを選択したか
-						selectedarea=-1;//どこにカードを置いたか
-						selectcardstack=-1;//引くカードを選択
+						selectedcard=-1;
+						selectedarea=-1;
+						selectcardstack=-1;
 					}
 				} else if (s.selectionArea == Area.Flags) {
-					//カード配置場所
+
 					System.out.println("put card on one of the flags...");
 					
 					
 					if(selectedarea!=-1){
 						System.out.println(selectedarea);
-						int selectedIndex = selectedarea; //変更
+						int selectedIndex = selectedarea;
 						if (s.turn == 1) {
-							BattleLine.out_box.println("Input");	//ƒNƒ‰ƒCƒAƒ“ƒg‘¤‚©‚ç“ü—Í‚ð‹‚ß‚é
+							BattleLine.out_box.println("Input");
 							selectedIndex = Integer.parseInt(BattleLine.in_box.readLine());
 						}
 						assert 0 <= selectedIndex && selectedIndex < s.flags.size();
 						s.selectFlag(s.flag(selectedIndex));
-						selectedcard=-1;//どのカードを選択したか
-						selectedarea=-1;//どこにカードを置いたか
-						selectcardstack=-1;//引くカードを選択
+						selectedcard=-1;
+						selectedarea=-1;
+						selectcardstack=-1;
 
 					}
 
 				} else if (s.selectionArea == Area.CardStack) {
-					//山札からカードを引く
+					
 					System.out.println("draw a card from...");
-					//選択オプション
+					
 					System.out.println("[0] unit, [1] tactics");
 
+					BattleLine.out_box.println("fieldcard");
 					for (int i = 0; i < s.flags.size(); i++) {
 						Flag f = s.flag(i);
 						opponent_flag[i].setText(f.cards.get(1).toString());
+						
+						BattleLine.out_box.println(f.cards.get(1).toString());//give client's fieldcards
+						
 
 						flagbtn[i].setText(f.cards.get(0).toString());
+						BattleLine.out_box.println(f.cards.get(0).toString());//give server's fieldcards
 					}
 					if(selectcardstack!=-1){
-						int selectedIndex = selectcardstack;//変更
+						int selectedIndex = selectcardstack;
 						assert 0 <= selectedIndex && selectedIndex <= 1;
 						if(s.turn==0){
 							if (selectedIndex == 0)
@@ -217,18 +237,19 @@ class CUI /*implements ActionListener*/{
 							else if (selectedIndex == 1)
 								s.selectStack(s.tacticsStack);
 						}else if(s.turn ==1){
-							BattleLine.out_box.println("Input");	//ƒNƒ‰ƒCƒAƒ“ƒg‘¤‚©‚ç“ü—Í‚ð‹‚ß‚é
+							BattleLine.out_box.println("Input");
 							selectedIndex = Integer.parseInt(BattleLine.in_box.readLine());
 							if (selectedIndex == 0)
 								s.selectStack(s.unitStack);
 							else if (selectedIndex == 1)
 								s.selectStack(s.tacticsStack);
 						}
-						selectedcard=-1;//どのカードを選択したか
-						selectedarea=-1;//どこにカードを置いたか
-						selectcardstack=-1;//引くカードを選択
+						selectedcard=-1;
+						selectedarea=-1;
+						selectcardstack=-1;
 
 					}
+					BattleLine.card_Flag = 0;// reset
 				}
 			}
 
@@ -244,6 +265,9 @@ public class BattleLine /* extends Application */ {
 	public static final int PORT = 8080;
 	static BufferedReader in_box;
 	static PrintWriter out_box;
+	static int card_Flag=0;//giving hand cards	0:not yet 1:already
+	static int deck_Flag=0;//giving deck choices	0:not yet 1:already
+	static int flag_Flag=0;//giving flag choices	0:not yet 1:already
 	public static void main(String[] args) 
 		throws IOException {
 		ServerSocket s = new ServerSocket(PORT);
@@ -254,8 +278,8 @@ public class BattleLine /* extends Application */ {
 				System.out.println(socket.getInputStream());
 				System.out.println(socket.getOutputStream());
 				System.out.println("Connection accepted: " + socket);
-				in_box = new BufferedReader(new InputStreamReader(socket.getInputStream()));	//ŽóM—p
-				out_box = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);	//‘—M—p
+				in_box = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+				out_box = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
 				CUI ui = new CUI(new GameSystem());
 				ui.main();
 			}finally{
