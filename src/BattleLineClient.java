@@ -25,12 +25,15 @@ class BattleLineClient {
 	//static String str2 = "0";
 	//static int box = 0;
 	//static int turn_flag = 0;
+	static int[] hcards = new int[8];
+	static int[][] s_fcards = new int[9][3];
+	static int[][] c_fcards = new int[9][3];
 	static BufferedReader in_box2;
 	static PrintWriter out_box2;
 	static BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
-	static Integer selectedcard=-1;//どのカードを選択したか
-	static Integer selectedarea=-1;//どこにカードを置いたか
-	static Integer selectcardstack=-1;//引くカードを選択
+	static Integer selectedcard=-1;
+	static Integer selectedarea=-1;
+	static Integer selectcardstack=-1;
 
 
 	static int readInt(BufferedReader in) throws IOException {
@@ -48,8 +51,10 @@ class BattleLineClient {
 	public static void main(String[] args)
 					throws IOException {
 
-		//GUI部分開始
-		GUI gui = new GUI("BattleLine");
+		//GUI部分開始			
+	
+			GUI gui = new GUI("BattleLine");
+
 			List<Card> co = new ArrayList<Card>();
 			GUICard cards1=new GUICard();
 
@@ -144,7 +149,8 @@ class BattleLineClient {
 			gui.add(cards5);
     		gui.setVisible(true);
     		//GUI終了
-		System.out.print("初期入力:");
+
+		System.out.print("server's machine name;");
 		String Name = input.readLine();
 		InetAddress addr = InetAddress.getByName(Name);
 		System.out.println("addr = " + addr);
@@ -154,19 +160,58 @@ class BattleLineClient {
 			System.out.println("socket = " + socket);
 			in_box2 = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			out_box2 = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
+			for(int i = 0; i < 8; i++) {
+				hcards[i] = 0;	//initialize hcards
+			}
+			for(int i = 0; i < 9; i++) {
+				for(int j = 0; j < 3; j++) {
+					s_fcards[i][j] = 99;	//initialize s_fcards
+					c_fcards[i][j] = 99;	//initialize c_fcards
+				}
+			}
 			while (true) {
 				String str = in_box2.readLine();
 
 				if (str.equals("Input")) {
 					out_box2.println(String.valueOf(readInt(input)));
+				} else if(str.equals("handcards")){
+					for (int i = 0; i < 7; i++){
+						String handcard = in_box2.readLine();
+						System.out.println("handcard:" + handcard);
+					}
+				} else if(str.equals("fieldcard")){
+					for(int i = 0; i < 9; i++){
+						String fieldcard0 = in_box2.readLine();
+						String fieldcard1 = in_box2.readLine();
+						if(fieldcard0.length() <= 4 && fieldcard0.length() > 2) {
+							c_fcards[i][0] = Integer.parseInt(fieldcard0.substring(1,1+2));
+						} else if(fieldcard0.length() >= 5 && fieldcard0.length() < 9){
+							c_fcards[i][0] = Integer.parseInt(fieldcard0.substring(1,1+2));
+							c_fcards[i][1] = Integer.parseInt(fieldcard0.substring(5,5+2));
+						} else if(fieldcard0.length() >= 9 && fieldcard0.length() < 13){
+							c_fcards[i][0] = Integer.parseInt(fieldcard0.substring(1,1+2));
+							c_fcards[i][1] = Integer.parseInt(fieldcard0.substring(5,5+2));
+							c_fcards[i][2] = Integer.parseInt(fieldcard0.substring(9,9+2));
+						}
+						if(fieldcard1.length() <= 4 && fieldcard1.length() > 2) {
+							s_fcards[i][0] = Integer.parseInt(fieldcard1.substring(1,1+2));
+						} else if(fieldcard1.length() >= 5 && fieldcard1.length() < 9){
+							s_fcards[i][0] = Integer.parseInt(fieldcard1.substring(1,1+2));
+							s_fcards[i][1] = Integer.parseInt(fieldcard1.substring(5,5+2));
+						} else if(fieldcard1.length() >= 9 && fieldcard1.length() < 13){
+							s_fcards[i][0] = Integer.parseInt(fieldcard1.substring(1,1+2));
+							s_fcards[i][1] = Integer.parseInt(fieldcard1.substring(5,5+2));
+							s_fcards[i][2] = Integer.parseInt(fieldcard1.substring(9,9+2));
+						}
+						System.out.println("client's fieldcard:" + "[" + c_fcards[i][0] + "," + c_fcards[i][1] + "," + c_fcards[i][2] + "]" + "server's fieldcard" + "[" + s_fcards[i][0] + "," + s_fcards[i][1] + "," + s_fcards[i][2] + "]");
+					}
 				} else {
-					System.out.println(str);//いつInputでいつその他が送られてくるか
+					System.out.println(str);
 				}
 				if (str == "END") break;
 			}
 			
-			//CUIclient ui = new CUIclient(new GameSystem());
-			//ui.main();//launch(args);
+			
 		} finally {
 			System.out.println("closing...");
 			socket.close();
