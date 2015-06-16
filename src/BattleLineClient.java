@@ -49,9 +49,7 @@ class BattleLineClient {
 					throws IOException {
 
 		//GUI部分開始
-			
-	
-			GUI gui = new GUI("BattleLine");
+		GUI gui = new GUI("BattleLine");
 			List<Card> co = new ArrayList<Card>();
 			GUICard cards1=new GUICard();
 
@@ -64,10 +62,10 @@ class BattleLineClient {
 			gui.add(cards3);
 			
 			JLabel[] opponent_card=new JLabel[7]; 
-			JButton[] flagbtn = new JButton[9];
+			JLabel[] flaglabel = new JLabel[9];
 			JButton[] btn = new JButton[7];
 			JButton[] cardstack= new JButton[2];
-			JLabel[] flag= new JLabel[9];
+			JButton[] flag= new JButton[9];
 			JLabel[] opponent_flag=new JLabel[9];
 			JLabel label1=new JLabel();
 			JLabel label2=new JLabel();
@@ -110,7 +108,11 @@ class BattleLineClient {
 
 			cards3.add(cardstack[0]);
 			for(Integer i=0;i<9;i++){
-				flag[i]=new JLabel();
+				flag[i]=new JButton();
+
+				flag[i].addActionListener(
+					e->selectedarea=Integer.parseInt(e.getActionCommand()));
+				flag[i].setActionCommand(i.toString());
 				ImageIcon icon =new ImageIcon("./image/flag.png");
 				flag[i].setIcon(icon);
 				cards3.add(flag[i]);
@@ -120,13 +122,12 @@ class BattleLineClient {
 
 			cards4.add(label1);
 			for(Integer i=0;i<9;i++){
-				flagbtn[i]=new JButton();
-				flagbtn[i].addActionListener(
-					e->selectedarea=Integer.parseInt(e.getActionCommand()));
-				flagbtn[i].setActionCommand(i.toString());
-				flagbtn[i].setBackground(Color.GRAY);
-				flagbtn[i].setOpaque(true);
-				cards4.add(flagbtn[i]);
+				flaglabel[i]=new JLabel();
+				//flagbtn[i].setLayout(new GridLayout(0,3));
+				//flaglabel[i].setActionCommand(i.toString());
+				flaglabel[i].setBackground(Color.GRAY);
+				flaglabel[i].setOpaque(true);
+				cards4.add(flaglabel[i]);
 			}
 			cards4.add(label2);
 
@@ -142,7 +143,7 @@ class BattleLineClient {
 			gui.add(cards4);
 			gui.add(cards5);
     		gui.setVisible(true);
-    	//GUI部分終了
+    		//GUI終了
 		System.out.print("初期入力:");
 		String Name = input.readLine();
 		InetAddress addr = InetAddress.getByName(Name);
@@ -155,7 +156,7 @@ class BattleLineClient {
 			out_box2 = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
 			while (true) {
 				String str = in_box2.readLine();
-				
+
 				if (str.equals("Input")) {
 					out_box2.println(String.valueOf(readInt(input)));
 				} else {

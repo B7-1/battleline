@@ -62,10 +62,10 @@ class CUI /*implements ActionListener*/{
 			gui.add(cards3);
 			
 			JLabel[] opponent_card=new JLabel[7]; 
-			JButton[] flagbtn = new JButton[9];
+			JLabel[] flaglabel = new JLabel[9];
 			JButton[] btn = new JButton[7];
 			JButton[] cardstack= new JButton[2];
-			JLabel[] flag= new JLabel[9];
+			JButton[] flag= new JButton[9];
 			JLabel[] opponent_flag=new JLabel[9];
 			JLabel label1=new JLabel();
 			JLabel label2=new JLabel();
@@ -86,6 +86,7 @@ class CUI /*implements ActionListener*/{
 			for(Integer i=0;i<9;i++){
 			 	opponent_flag[i]=new JLabel();
 			 	opponent_flag[i].setBackground(Color.GRAY);
+			 	opponent_flag[i].setLayout(new GridLayout(0,3));
 				opponent_flag[i].setOpaque(true);
 				cards2.add(opponent_flag[i]);
 			}
@@ -108,7 +109,10 @@ class CUI /*implements ActionListener*/{
 
 			cards3.add(cardstack[0]);
 			for(Integer i=0;i<9;i++){
-				flag[i]=new JLabel();
+				flag[i]=new JButton();
+				flag[i].addActionListener(
+					e->selectedarea=Integer.parseInt(e.getActionCommand()));
+				flag[i].setActionCommand(i.toString());
 				ImageIcon icon =new ImageIcon("./image/flag.png");
 				flag[i].setIcon(icon);
 				cards3.add(flag[i]);
@@ -118,14 +122,11 @@ class CUI /*implements ActionListener*/{
 
 			cards4.add(label1);
 			for(Integer i=0;i<9;i++){
-				flagbtn[i]=new JButton();
-				//flagbtn[i].setLayout(new GridLayout(0,3));
-				flagbtn[i].addActionListener(
-					e->selectedarea=Integer.parseInt(e.getActionCommand()));
-				flagbtn[i].setActionCommand(i.toString());
-				flagbtn[i].setBackground(Color.GRAY);
-				flagbtn[i].setOpaque(true);
-				cards4.add(flagbtn[i]);
+				flaglabel[i]=new JLabel();
+				flaglabel[i].setLayout(new GridLayout(0,3));
+				flaglabel[i].setBackground(Color.GRAY);
+				flaglabel[i].setOpaque(true);
+				cards4.add(flaglabel[i]);
 			}
 			cards4.add(label2);
 
@@ -206,7 +207,7 @@ class CUI /*implements ActionListener*/{
 						Flag f = s.flag(i);
 						opponent_flag[i].setText(f.cards.get(1).toString());
 
-						flagbtn[i].setText(f.cards.get(0).toString());
+						flaglabel[i].setText(f.cards.get(0).toString());
 					}
 					if(selectcardstack!=-1){
 						int selectedIndex = selectcardstack;//変更
