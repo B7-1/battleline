@@ -49,120 +49,128 @@ class BattleLineClient {
 			throw e;
 		}
 	}
+
+	static void nextPhase() {
+		selectedcard=-1;
+		selectedarea=-1;
+		selectcardstack=-1;
+		phase_counter++;
+		wait=0;
+	}
 	
 	public static void main(String[] args)
-					throws IOException {
+	throws IOException {
 
 		//GUI部分開始			
-	
-			GUI gui = new GUI("BattleLine");
 
-			List<Card> co = new ArrayList<Card>();
-			GUICard cards1=new GUICard();
+		GUI gui = new GUI("BattleLine");
 
-			GUIField cards2=new GUIField();
-			GUICenter cards3=new GUICenter();
-			GUIField cards4=new GUIField();
-			GUICard cards5=new GUICard();
-			gui.add(cards1);
-			gui.add(cards2);
-			gui.add(cards3);
-			
-			JLabel[] opponent_card=new JLabel[7]; 
-			JLabel[] flaglabel = new JLabel[9];
-			JLabel[][] flaglabel_card=new JLabel[9][3];
+		List<Card> co = new ArrayList<Card>();
+		GUICard cards1=new GUICard();
 
-			JButton[] btn = new JButton[7];
-			JButton[] cardstack= new JButton[2];
-			JButton[] flag= new JButton[9];
-			JLabel[] opponent_flag=new JLabel[9];
-			JLabel[][] opponent_flag_card=new JLabel[9][3];
+		GUIField cards2=new GUIField();
+		GUICenter cards3=new GUICenter();
+		GUIField cards4=new GUIField();
+		GUICard cards5=new GUICard();
+		gui.add(cards1);
+		gui.add(cards2);
+		gui.add(cards3);
 
-			JLabel label1=new JLabel();
-			JLabel label2=new JLabel();
-			JLabel label3=new JLabel();
-			JLabel label4=new JLabel();
+		JLabel[] opponent_card=new JLabel[7]; 
+		JLabel[] flaglabel = new JLabel[9];
+		JLabel[][] flaglabel_card=new JLabel[9][3];
+
+		JButton[] btn = new JButton[7];
+		JButton[] cardstack= new JButton[2];
+		JButton[] flag= new JButton[9];
+		JLabel[] opponent_flag=new JLabel[9];
+		JLabel[][] opponent_flag_card=new JLabel[9][3];
+
+		JLabel label1=new JLabel();
+		JLabel label2=new JLabel();
+		JLabel label3=new JLabel();
+		JLabel label4=new JLabel();
 
 
-			for(Integer i=0;i<7;i++){
-				opponent_card[i]=new JLabel();
-				ImageIcon icon =new ImageIcon("./image/cardimage.png");
-			 	opponent_card[i].setIcon(icon);
-			 	EtchedBorder border = new EtchedBorder(EtchedBorder.RAISED, Color.white, Color.white);
-    			opponent_card[i].setBorder(border);
-				cards1.add(opponent_card[i]);
+		for(Integer i=0;i<7;i++){
+			opponent_card[i]=new JLabel();
+			ImageIcon icon =new ImageIcon("./image/cardimage.png");
+			opponent_card[i].setIcon(icon);
+			EtchedBorder border = new EtchedBorder(EtchedBorder.RAISED, Color.white, Color.white);
+			opponent_card[i].setBorder(border);
+			cards1.add(opponent_card[i]);
+		}
+
+		cards2.add(label3);
+		for(Integer i=0;i<9;i++){
+			opponent_flag[i]=new JLabel();
+			opponent_flag[i].setBackground(Color.WHITE);
+			opponent_flag[i].setLayout(new GridLayout(3,0));
+			for(Integer j=0;j<3;j++){
+				opponent_flag_card[i][j]=new JLabel();
+				opponent_flag[i].add(opponent_flag_card[i][j]);
 			}
+			opponent_flag[i].setOpaque(true);
+			cards2.add(opponent_flag[i]);
+		}
+		cards2.add(label4);
 
-			cards2.add(label3);
-			for(Integer i=0;i<9;i++){
-			 	opponent_flag[i]=new JLabel();
-			 	opponent_flag[i].setBackground(Color.WHITE);
-			 	opponent_flag[i].setLayout(new GridLayout(3,0));
-			 	for(Integer j=0;j<3;j++){
-			 		opponent_flag_card[i][j]=new JLabel();
-			 		opponent_flag[i].add(opponent_flag_card[i][j]);
-			 	}
-				opponent_flag[i].setOpaque(true);
-				cards2.add(opponent_flag[i]);
-			}
-			cards2.add(label4);
+		for(Integer i=0;i<2;i++){
+			cardstack[i]=new JButton();
+			cardstack[i].addActionListener(
+				e->selectcardstack=Integer.parseInt(e.getActionCommand()));
+			cardstack[i].setActionCommand(i.toString());
+			ImageIcon icon =new ImageIcon("./image/cardimage.png");
+			cardstack[i].setIcon(icon);
+			EtchedBorder border = new EtchedBorder(EtchedBorder.RAISED, Color.white, Color.white);
+			cardstack[i].setBorder(border);
+			cardstack[i].setOpaque(true);
+		}
 
-			for(Integer i=0;i<2;i++){
-				cardstack[i]=new JButton();
-				cardstack[i].addActionListener(
-					e->selectcardstack=Integer.parseInt(e.getActionCommand()));
-				cardstack[i].setActionCommand(i.toString());
-				ImageIcon icon =new ImageIcon("./image/cardimage.png");
-			 	cardstack[i].setIcon(icon);
-			 	EtchedBorder border = new EtchedBorder(EtchedBorder.RAISED, Color.white, Color.white);
-    			cardstack[i].setBorder(border);
-				cardstack[i].setOpaque(true);
-			}
+		cardstack[0].setText("unit");
+		cardstack[1].setText("tactics");
 
-			cardstack[0].setText("unit");
-			cardstack[1].setText("tactics");
+		cards3.add(cardstack[0]);
+		for(Integer i=0;i<9;i++){
+			flag[i]=new JButton();
 
-			cards3.add(cardstack[0]);
-			for(Integer i=0;i<9;i++){
-				flag[i]=new JButton();
-
-				flag[i].addActionListener(
-					e->selectedarea=Integer.parseInt(e.getActionCommand()));
-				flag[i].setActionCommand(i.toString());
-				ImageIcon icon =new ImageIcon("./image/flag.png");
-				flag[i].setIcon(icon);
-				cards3.add(flag[i]);
-			}
-			cards3.add(cardstack[1]);
+			flag[i].addActionListener(
+				e->selectedarea=Integer.parseInt(e.getActionCommand()));
+			flag[i].setActionCommand(i.toString());
+			ImageIcon icon =new ImageIcon("./image/flag.png");
+			flag[i].setIcon(icon);
+			cards3.add(flag[i]);
+		}
+		cards3.add(cardstack[1]);
 
 
-			cards4.add(label1);
-			for(Integer i=0;i<9;i++){
-				flaglabel[i]=new JLabel();
-				flaglabel[i].setLayout(new GridLayout(3,0));
+		cards4.add(label1);
+		for(Integer i=0;i<9;i++){
+			flaglabel[i]=new JLabel();
+			flaglabel[i].setLayout(new GridLayout(3,0));
 				//flaglabel[i].setActionCommand(i.toString());
-				for(Integer j=0;j<3;j++){
-					flaglabel_card[i][j]=new JLabel();
-			 		flaglabel[i].add(flaglabel_card[i][j]);
-			 	}
-				flaglabel[i].setBackground(Color.WHITE);
-				flaglabel[i].setOpaque(true);
-				cards4.add(flaglabel[i]);
+			for(Integer j=0;j<3;j++){
+				flaglabel_card[i][j]=new JLabel();
+				flaglabel[i].add(flaglabel_card[i][j]);
 			}
-			cards4.add(label2);
+			flaglabel[i].setBackground(Color.WHITE);
+			flaglabel[i].setOpaque(true);
+			cards4.add(flaglabel[i]);
+		}
+		cards4.add(label2);
 
-			for(Integer i=0;i<7;i++){
-				btn[i]=new JButton();
-				btn[i].addActionListener(
-					e->selectedcard= Integer.parseInt(e.getActionCommand()));
-				btn[i].setActionCommand(i.toString());
-				btn[i].setOpaque(true);
-				cards5.add(btn[i]);
-			}
+		for(Integer i=0;i<7;i++){
+			btn[i]=new JButton();
+			btn[i].addActionListener(
+				e->selectedcard= Integer.parseInt(e.getActionCommand()));
+			btn[i].setActionCommand(i.toString());
+			btn[i].setOpaque(true);
+			cards5.add(btn[i]);
+		}
 
-			gui.add(cards4);
-			gui.add(cards5);
-    		gui.setVisible(true);
+		gui.add(cards4);
+		gui.add(cards5);
+		gui.setVisible(true);
     		//GUI終了
 
 
@@ -208,27 +216,18 @@ class BattleLineClient {
 						System.out.println("sendcard");
 						out_box2.println(String.valueOf(selectedcard.toString()));//手札のカード入力
 						System.out.println("send card");
-						selectedcard=-1;
-						selectedarea=-1;
-						selectcardstack=-1;
-						phase_counter++;
-						wait=0;
+						
+						nextPhase();
 					}else if(phase_counter%3==1 && selectedarea!=-1){
 						out_box2.println(String.valueOf(selectedarea.toString()));//旗場所入力
 						System.out.println("send flag");
-						selectedcard=-1;
-						selectedarea=-1;
-						selectcardstack=-1;
-						phase_counter++;
-						wait=0;
+						
+						nextPhase();
 					}else if(phase_counter%3==2 && selectcardstack!=-1){
 						System.out.println("send cardstack");
 						out_box2.println(String.valueOf(selectcardstack.toString()));//山札のカード入力
-						selectedcard=-1;
-						selectedarea=-1;
-						selectcardstack=-1;
-						phase_counter++;
-						wait=0;
+						
+						nextPhase();
 					}
 					System.out.println("in wait 2 \n");
 				} else if(str.equals("handcards")){
