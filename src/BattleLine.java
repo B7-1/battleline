@@ -110,6 +110,7 @@ public class BattleLine extends WindowAdapter {
 					assert 0 <= selectedIndex && selectedIndex < system.flags.size();
 					system.selectFlag(system.flag(selectedIndex));
 					inputmode = InputMode.Disabled;
+					updateHandCards();
 					updateFieldCards();
 					new Thread(() -> pollingLoop()).start();
 				});
@@ -189,7 +190,7 @@ public class BattleLine extends WindowAdapter {
 				System.out.println("put card on one of the flags...");
 
 				if (system.turn == 0) inputmode = InputMode.Flag;
-				if (system.turn==1) {
+				if (system.turn == 1) {
 					int selectedIndex = readIntFromClient();
 					assert 0 <= selectedIndex && selectedIndex < system.flags.size();
 					system.selectFlag(system.flag(selectedIndex));
@@ -218,10 +219,13 @@ public class BattleLine extends WindowAdapter {
 	}
 
 	void updateHandCards() {
-		for (int i = 0; i < system.player(system.turn).cards.size(); i++) {
-			Card c = system.player(system.turn).cards.get(i);
-
-			gui.btn[i].setIcon(cardIcon(c));
+		for (int i = 0; i < 7; i++) {
+			if (i < system.player(system.turn).cards.size()) {
+				Card c = system.player(system.turn).cards.get(i);
+				gui.btn[i].setIcon(cardIcon(c));
+			} else {
+				gui.btn[i].setIcon(null);
+			}
 			gui.btn[i].setBorder(new EtchedBorder(EtchedBorder.RAISED, Color.black, Color.black));
 		}
 	}
