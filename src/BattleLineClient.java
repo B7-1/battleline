@@ -35,7 +35,7 @@ class BattleLineClient {
 	static Integer selectedarea=-1;
 	static Integer selectcardstack=-1;
 	static Integer phase_counter=0;
-	static Integer wait=0;
+	static Boolean wait = false;
 
 
 	static int readInt(BufferedReader in) throws IOException {
@@ -51,11 +51,11 @@ class BattleLineClient {
 	}
 
 	static void nextPhase() {
-		selectedcard=-1;
-		selectedarea=-1;
-		selectcardstack=-1;
+		selectedcard = -1;
+		selectedarea = -1;
+		selectcardstack = -1;
 		phase_counter++;
-		wait=0;
+		wait = false;
 	}
 
 	static GUI gui;
@@ -102,17 +102,17 @@ class BattleLineClient {
 				System.out.println("aaaa\n");
 
 				String str="-1";
-				if(wait==0){
+				if(!wait){
 					System.out.println("stop");
 					str = in_box2.readLine();
 				}
 
 				if(str.equals("Input")){
-					wait=1;
+					wait = true;
 					System.out.println("wait\n");
 				}
 
-				if (wait==1) {
+				if (wait) {
 					System.out.println("in wait \n");
 					if(phase_counter%3==0 && selectedcard!=-1){
 						System.out.println("sendcard");
@@ -143,28 +143,30 @@ class BattleLineClient {
 					for(int i = 0; i < 9; i++){
 						String fieldcard0 = in_box2.readLine();
 						String fieldcard1 = in_box2.readLine();
-						if(fieldcard0.length() <= 4 && fieldcard0.length() > 2) {
+
+						assert fieldcard0.length() < 13;
+						if (2 < fieldcard0.length()) {
 							c_fcards[i][0] = Integer.parseInt(fieldcard0.substring(1,1+2));
-						} else if(fieldcard0.length() >= 5 && fieldcard0.length() < 9){
-							c_fcards[i][0] = Integer.parseInt(fieldcard0.substring(1,1+2));
+						}
+						if (4 < fieldcard0.length()) {
 							c_fcards[i][1] = Integer.parseInt(fieldcard0.substring(5,5+2));
-						} else if(fieldcard0.length() >= 9 && fieldcard0.length() < 13){
-							c_fcards[i][0] = Integer.parseInt(fieldcard0.substring(1,1+2));
-							c_fcards[i][1] = Integer.parseInt(fieldcard0.substring(5,5+2));
+						}
+						if (8 < fieldcard0.length()) {
 							c_fcards[i][2] = Integer.parseInt(fieldcard0.substring(9,9+2));
 						}
-						if(fieldcard1.length() <= 4 && fieldcard1.length() > 2) {
+
+						assert fieldcard1.length() < 13;
+						if (2 < fieldcard1.length()) {
 							s_fcards[i][0] = Integer.parseInt(fieldcard1.substring(1,1+2));
-						} else if(fieldcard1.length() >= 5 && fieldcard1.length() < 9){
-							s_fcards[i][0] = Integer.parseInt(fieldcard1.substring(1,1+2));
+						}
+						if (4 < fieldcard1.length()) {
 							s_fcards[i][1] = Integer.parseInt(fieldcard1.substring(5,5+2));
-						} else if(fieldcard1.length() >= 9 && fieldcard1.length() < 13){
-							s_fcards[i][0] = Integer.parseInt(fieldcard1.substring(1,1+2));
-							s_fcards[i][1] = Integer.parseInt(fieldcard1.substring(5,5+2));
+						}
+						if (5 < fieldcard1.length()) {
 							s_fcards[i][2] = Integer.parseInt(fieldcard1.substring(9,9+2));
 						}
 
-						for(int j=0;j<3;j++){
+						for(int j = 0; j < 3; j++){
 							ImageIcon icon1 = new ImageIcon("./image/s"+c_fcards[i][j]+".png");
 							ImageIcon icon2 = new ImageIcon("./image/s"+s_fcards[i][j]+".png");
 							gui.flaglabel_card[i][j].setIcon(icon1);
@@ -175,6 +177,7 @@ class BattleLineClient {
 					System.out.println(str);
 					System.out.println("bbbb\n");
 				}
+
 				if (str == "END") break;
 			}
 			
