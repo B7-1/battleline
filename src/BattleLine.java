@@ -200,8 +200,7 @@ public class BattleLine extends WindowAdapter {
 				System.out.println("draw a card from...");
 				System.out.println("[0] unit, [1] tactics");
 
-				out_box.println("fieldcard");
-
+				sendFieldCards();
 				updateFieldCards();
 
 				if (system.turn == 0) inputmode = InputMode.Stack;
@@ -230,14 +229,21 @@ public class BattleLine extends WindowAdapter {
 		}
 	}
 
-	void updateFieldCards() {
+	void sendFieldCards() {
+		out_box.println("fieldcard");
 		for (Integer i = 0; i < system.flags.size(); i++) {
 			Flag f = system.flag(i);
 
-						// give client's fieldcards
+			// give client's fieldcards
 			out_box.println(f.cards.get(1).toString());
-						// give server's fieldcards
+			// give server's fieldcards
 			out_box.println(f.cards.get(0).toString());
+		}
+	}
+
+	void updateFieldCards() {
+		for (Integer i = 0; i < system.flags.size(); i++) {
+			Flag f = system.flag(i);
 
 			String fieldcard0 = f.cards.get(1).toString();
 			String fieldcard1 = f.cards.get(0).toString();
@@ -260,7 +266,7 @@ public class BattleLine extends WindowAdapter {
 			if (4 < fieldcard1.length()) {
 				s_fcards[i][1] = Integer.parseInt(fieldcard1.substring(5,5+2));
 			}
-			if (5 < fieldcard1.length()) {
+			if (8 < fieldcard1.length()) {
 				s_fcards[i][2] = Integer.parseInt(fieldcard1.substring(9,9+2));
 			}
 
