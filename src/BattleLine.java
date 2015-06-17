@@ -30,6 +30,7 @@ public class BattleLine /* extends Application */ {
 	static int[] hcards = new int[8];
 	static int[][] s_fcards = new int[9][3];
 	static int[][] c_fcards = new int[9][3];
+	static int inputmode = 0; // 1: stack, 2: card, 3: flag.
 
 	public static void main(String[] args) throws IOException {
 		ServerSocket s = new ServerSocket(PORT);
@@ -74,20 +75,27 @@ public class BattleLine /* extends Application */ {
 			
 			GUI gui = new GUI("BattleLine");
 			for (int i = 0; i < 2; i++) {
-				gui.cardstack[i].addActionListener(e -> selectStack(Integer.parseInt(e.getActionCommand())));
+				gui.cardstack[i].addActionListener(e -> {
+					if (inputmode != 1) return;
+					selectStack(Integer.parseInt(e.getActionCommand()));
+					inputmode = 0;
+				});
 			}
 
 			for (int i = 0; i < 9; i++) {
 				gui.flag[i].addActionListener(e -> {
+					if (inputmode != 3) return;
 					int selectedIndex = Integer.parseInt(e.getActionCommand());
 					System.out.println(selectedIndex);
 					assert 0 <= selectedIndex && selectedIndex < system.flags.size();
 					system.selectFlag(system.flag(selectedIndex));
+					inputmode = 0;
 				});
 			}
 
 			for (int i = 0; i < 7; i++) {
 				gui.btn[i].addActionListener(e -> {
+					if (inputmode != 2) return;
 					final Player player = system.player(system.turn);
 					int selectedIndex = Integer.parseInt(e.getActionCommand());
 					
@@ -95,6 +103,7 @@ public class BattleLine /* extends Application */ {
 					assert 0 <= selectedIndex && selectedIndex < player.cards.size();
 					system.selectCard(player.cards.get(selectedIndex));
 					System.out.println();
+					inputmode = 0;
 				});
 			}
 
@@ -139,6 +148,7 @@ public class BattleLine /* extends Application */ {
 						card_Flag = 1;
 					}
 
+					if (system.turn == 0) inputmode = 2;
 					final Player player = system.player(system.turn);
 					if (system.turn == 1) {
 						int selectedIndex = readIntFromClient();
@@ -149,12 +159,12 @@ public class BattleLine /* extends Application */ {
 				} else if (system.selectionArea == Area.Flags) {
 					System.out.println("put card on one of the flags...");
 
+					if (system.turn == 0) inputmode = 3;
 					if (system.turn==1) {
 						int selectedIndex = readIntFromClient();
 						assert 0 <= selectedIndex && selectedIndex < system.flags.size();
 						system.selectFlag(system.flag(selectedIndex));
 					}
-
 				} else if (system.selectionArea == Area.CardStack) {
 					System.out.println("draw a card from...");
 					System.out.println("[0] unit, [1] tactics");
@@ -200,6 +210,7 @@ public class BattleLine /* extends Application */ {
 						}
 					}
 
+					if (system.turn == 0) inputmode = 1;
 					if (system.turn == 1) {
 						selectStack(readIntFromClient());
 					}
