@@ -22,7 +22,7 @@ import java.awt.event.*;
 import java.awt.GridLayout;
 
 
-public class BattleLine /* extends Application */ {
+public class BattleLine extends WindowAdapter {
 	public static final int PORT = 8080;
 	static BufferedReader in_box;
 	static PrintWriter out_box;
@@ -30,7 +30,14 @@ public class BattleLine /* extends Application */ {
 	static int[] hcards = new int[8];
 	static int[][] s_fcards = new int[9][3];
 	static int[][] c_fcards = new int[9][3];
-	static int inputmode = 0; // 1: stack, 2: card, 3: flag.
+	static InputMode inputmode = InputMode.Disabled;
+
+	enum InputMode {
+		Disabled,
+		Stack,
+		Card,
+		Flag,
+	}
 
 	public static void main(String[] args) throws IOException {
 		ServerSocket s = new ServerSocket(PORT);
@@ -76,26 +83,26 @@ public class BattleLine /* extends Application */ {
 			GUI gui = new GUI("BattleLine");
 			for (int i = 0; i < 2; i++) {
 				gui.cardstack[i].addActionListener(e -> {
-					if (inputmode != 1) return;
+					if (inputmode != InputMode.Stack) return;
 					selectStack(Integer.parseInt(e.getActionCommand()));
-					inputmode = 0;
+					inputmode = InputMode.Disabled;
 				});
 			}
 
 			for (int i = 0; i < 9; i++) {
 				gui.flag[i].addActionListener(e -> {
-					if (inputmode != 3) return;
+					if (inputmode != InputMode.Flag) return;
 					int selectedIndex = Integer.parseInt(e.getActionCommand());
 					System.out.println(selectedIndex);
 					assert 0 <= selectedIndex && selectedIndex < system.flags.size();
 					system.selectFlag(system.flag(selectedIndex));
-					inputmode = 0;
+					inputmode = InputMode.Disabled;
 				});
 			}
 
 			for (int i = 0; i < 7; i++) {
 				gui.btn[i].addActionListener(e -> {
-					if (inputmode != 2) return;
+					if (inputmode != InputMode.Card) return;
 					final Player player = system.player(system.turn);
 					int selectedIndex = Integer.parseInt(e.getActionCommand());
 					
@@ -103,7 +110,7 @@ public class BattleLine /* extends Application */ {
 					assert 0 <= selectedIndex && selectedIndex < player.cards.size();
 					system.selectCard(player.cards.get(selectedIndex));
 					System.out.println();
-					inputmode = 0;
+					inputmode = InputMode.Disabled;
 				});
 			}
 
@@ -148,7 +155,7 @@ public class BattleLine /* extends Application */ {
 						card_Flag = 1;
 					}
 
-					if (system.turn == 0) inputmode = 2;
+					if (system.turn == 0) inputmode = InputMode.Card;
 					final Player player = system.player(system.turn);
 					if (system.turn == 1) {
 						int selectedIndex = readIntFromClient();
@@ -159,7 +166,7 @@ public class BattleLine /* extends Application */ {
 				} else if (system.selectionArea == Area.Flags) {
 					System.out.println("put card on one of the flags...");
 
-					if (system.turn == 0) inputmode = 3;
+					if (system.turn == 0) inputmode = InputMode.Flag;
 					if (system.turn==1) {
 						int selectedIndex = readIntFromClient();
 						assert 0 <= selectedIndex && selectedIndex < system.flags.size();
@@ -174,9 +181,9 @@ public class BattleLine /* extends Application */ {
 					for (Integer i = 0; i < system.flags.size(); i++) {
 						Flag f = system.flag(i);
 
-					// give client's fieldcards
+						// give client's fieldcards
 						out_box.println(f.cards.get(1).toString());
-					// give server's fieldcards
+						// give server's fieldcards
 						out_box.println(f.cards.get(0).toString());
 
 						String fieldcard0 = f.cards.get(1).toString();
@@ -210,7 +217,7 @@ public class BattleLine /* extends Application */ {
 						}
 					}
 
-					if (system.turn == 0) inputmode = 1;
+					if (system.turn == 0) inputmode = InputMode.Stack;
 					if (system.turn == 1) {
 						selectStack(readIntFromClient());
 					}
