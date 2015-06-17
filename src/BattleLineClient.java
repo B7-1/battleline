@@ -134,8 +134,12 @@ class BattleLineClient {
 					for (int i = 0; i < 7; i++){
 						System.out.println("handcard:");
 						String handcard = in_box2.readLine();
-						ImageIcon icon = new ImageIcon("./image/" + handcard + ".png");
-						gui.btn[i].setIcon(icon);
+						if (handcard.equals("")) {
+							gui.btn[i].setIcon(null);
+						} else {
+							ImageIcon icon = new ImageIcon("./image/" + handcard + ".png");
+							gui.btn[i].setIcon(icon);
+						}
 					}
 				} else if(str.equals("fieldcard")){
 					receiveFieldCards();

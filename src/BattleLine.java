@@ -139,6 +139,12 @@ public class BattleLine extends WindowAdapter {
 				}
 			}
 
+			while (system.selectionArea == Area.None) {
+				System.out.println();
+				system.step();
+			}
+
+			sendHandCards(1);
 			pollingLoop();
 		} catch (Exception e) {
 			System.out.println(e);
@@ -161,15 +167,10 @@ public class BattleLine extends WindowAdapter {
 				//client's turn
 				if(system.turn == 1 && card_Flag == 0) {
 					// sign of giving hand cards
-					out_box.println("handcards");
+					sendHandCards(1);
 
 					for (int i = 0; i < system.player(system.turn).cards.size(); i++) {
-						Card c = system.player(system.turn).cards.get(i);
 						Card cs= system.player(0).cards.get(i);
-
-							// give hand cards
-						out_box.println(c);
-
 						gui.btn[i].setIcon(cardIcon(cs));
 						gui.btn[i].setBorder(new EtchedBorder(EtchedBorder.RAISED, Color.black, Color.black));
 					}
@@ -194,6 +195,7 @@ public class BattleLine extends WindowAdapter {
 					int selectedIndex = readIntFromClient();
 					assert 0 <= selectedIndex && selectedIndex < system.flags.size();
 					system.selectFlag(system.flag(selectedIndex));
+					sendHandCards(1);
 					pollingLoop();
 				}
 			} else if (system.selectionArea == Area.CardStack) {
@@ -206,6 +208,7 @@ public class BattleLine extends WindowAdapter {
 				if (system.turn == 0) inputmode = InputMode.Stack;
 				if (system.turn == 1) {
 					selectStack(readIntFromClient());
+					sendHandCards(1);
 					pollingLoop();
 				}
 
@@ -214,6 +217,20 @@ public class BattleLine extends WindowAdapter {
 		}
 		catch (IOException e) {
 			System.out.println(e);
+		}
+	}
+
+	void sendHandCards(int player) {
+		out_box.println("handcards");
+		for (int i = 0; i < 7; i++) {
+			if (i < system.player(player).cards.size()) {
+				Card c = system.player(player).cards.get(i);
+
+				// give hand cards
+				out_box.println(c);
+			} else {
+				out_box.println("");
+			}
 		}
 	}
 
