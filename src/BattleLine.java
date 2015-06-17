@@ -24,13 +24,13 @@ import java.awt.GridLayout;
 
 public class BattleLine extends WindowAdapter {
 	public static final int PORT = 8080;
-	static BufferedReader in_box;
-	static PrintWriter out_box;
-	static int card_Flag=0;//giving hand cards	0:not yet 1:already
-	static int[] hcards = new int[8];
-	static int[][] s_fcards = new int[9][3];
-	static int[][] c_fcards = new int[9][3];
-	static InputMode inputmode = InputMode.Disabled;
+	BufferedReader in_box;
+	PrintWriter out_box;
+	int card_Flag=0;//giving hand cards	0:not yet 1:already
+	int[] hcards = new int[8];
+	int[][] s_fcards = new int[9][3];
+	int[][] c_fcards = new int[9][3];
+	InputMode inputmode = InputMode.Disabled;
 
 	enum InputMode {
 		Disabled,
@@ -40,24 +40,22 @@ public class BattleLine extends WindowAdapter {
 	}
 
 	public static void main(String[] args) throws IOException {
-		ServerSocket s = new ServerSocket(PORT);
-		System.out.println("Started: " + s);
-		try {
-			Socket socket = s.accept();
-			try {
-				System.out.println(socket.getInputStream());
-				System.out.println(socket.getOutputStream());
-				System.out.println("Connection accepted: " + socket);
-				in_box = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-				out_box = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
-				start();
-			}finally{
-				System.out.println("closing...");
-				socket.close();
-			}
-		}finally{
-			s.close();
-		}
+		new BattleLine().game();
+	}
+
+	Socket socket;
+	ServerSocket serverSocket;
+	void game() throws IOException {
+		serverSocket = new ServerSocket(PORT);
+		System.out.println("Started: " + serverSocket);
+		
+		socket = serverSocket.accept();
+		System.out.println(socket.getInputStream());
+		System.out.println(socket.getOutputStream());
+		System.out.println("Connection accepted: " + socket);
+		in_box = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		out_box = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
+		start();
 	}
 
 	static ImageIcon cardIcon(Object obj) {
@@ -68,19 +66,30 @@ public class BattleLine extends WindowAdapter {
 		return new ImageIcon("./image/s" + obj + ".png");
 	}
 
-	static int readIntFromClient() throws IOException {
+	int readIntFromClient() throws IOException {
 		out_box.println("Input");
-		return Integer.parseInt(BattleLine.in_box.readLine());
+		return Integer.parseInt(in_box.readLine());
 	}
 
-	static GameSystem system;
-	static void start() {
+	public void windowClosing(WindowEvent e) {
+		System.out.println("window closed.");
+		try {
+			socket.close();
+			serverSocket.close();
+		} catch (IOException ex) {
+			System.out.println(ex);
+		}
+	}
+
+	GameSystem system;
+	void start() {
 		system = new GameSystem();
 
 		try {
 			BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 			
 			GUI gui = new GUI("BattleLine");
+			gui.addWindowListener(this);
 			for (int i = 0; i < 2; i++) {
 				gui.cardstack[i].addActionListener(e -> {
 					if (inputmode != InputMode.Stack) return;
@@ -231,7 +240,7 @@ public class BattleLine extends WindowAdapter {
 		}
 	}
 
-	static void selectStack(int index) {
+	void selectStack(int index) {
 		assert 0 <= index && index <= 1;
 		if (index == 0)
 			system.selectStack(system.unitStack);
