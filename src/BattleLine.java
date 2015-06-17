@@ -57,6 +57,14 @@ public class BattleLine /* extends Application */ {
 		}
 	}
 
+	static ImageIcon cardIcon(Object obj) {
+		return new ImageIcon("./image/" + obj + ".png");
+	}
+
+	static ImageIcon smallCardIcon(Object obj) {
+		return new ImageIcon("./image/s" + obj + ".png");
+	}
+
 	static void start() {
 		GameSystem system = new GameSystem();
 
@@ -92,11 +100,9 @@ public class BattleLine /* extends Application */ {
 					if(system.turn == 0){	//server's turn
 					for (int i = 0; i < system.player(system.turn).cards.size(); i++) {
 						Card c = system.player(system.turn).cards.get(i);
-						ImageIcon icon = new ImageIcon("./image/"+c.toString()+".png");
 
-						gui.btn[i].setIcon(icon);
-						EtchedBorder border = new EtchedBorder(EtchedBorder.RAISED, Color.black, Color.black);
-						gui.btn[i].setBorder(border);
+						gui.btn[i].setIcon(cardIcon(c));
+						gui.btn[i].setBorder(new EtchedBorder(EtchedBorder.RAISED, Color.black, Color.black));
 					}
 				}
 
@@ -105,14 +111,11 @@ public class BattleLine /* extends Application */ {
 						for (int i = 0; i < system.player(system.turn).cards.size(); i++) {
 							Card c = system.player(system.turn).cards.get(i);
 							Card cs= system.player(0).cards.get(i);
-							ImageIcon icon = new ImageIcon("./image/"+cs.toString()+".png");
-							gui.btn[i].setIcon(icon);
 
-							BattleLine.out_box.println(c.toString());//give hand cards
-							
-							
-							EtchedBorder border = new EtchedBorder(EtchedBorder.RAISED, Color.black, Color.black);
-							gui.btn[i].setBorder(border);
+							BattleLine.out_box.println(c);//give hand cards
+
+							gui.btn[i].setIcon(cardIcon(cs));
+							gui.btn[i].setBorder(new EtchedBorder(EtchedBorder.RAISED, Color.black, Color.black));
 						}
 						BattleLine.card_Flag = 1;
 					}
@@ -173,40 +176,35 @@ public class BattleLine /* extends Application */ {
 
 						BattleLine.out_box.println(f.cards.get(1).toString());//give client's fieldcards
 						BattleLine.out_box.println(f.cards.get(0).toString());//give server's fieldcards
-						
+
 						String fieldcard0 = f.cards.get(1).toString();
 						String fieldcard1 = f.cards.get(0).toString();
-						if(fieldcard0.length() <= 4 && fieldcard0.length() > 2) {
-							BattleLine.c_fcards[i][0] = Integer.parseInt(fieldcard0.substring(1,1+2));
-						} else if(fieldcard0.length() >= 5 && fieldcard0.length() < 9){
-							BattleLine.c_fcards[i][0] = Integer.parseInt(fieldcard0.substring(1,1+2));
-							BattleLine.c_fcards[i][1] = Integer.parseInt(fieldcard0.substring(5,5+2));
-						} else if(fieldcard0.length() >= 9 && fieldcard0.length() < 13){
-							BattleLine.c_fcards[i][0] = Integer.parseInt(fieldcard0.substring(1,1+2));
-							BattleLine.c_fcards[i][1] = Integer.parseInt(fieldcard0.substring(5,5+2));
-							BattleLine.c_fcards[i][2] = Integer.parseInt(fieldcard0.substring(9,9+2));
-						}
-						if(fieldcard1.length() <= 4 && fieldcard1.length() > 2) {
-							BattleLine.s_fcards[i][0] = Integer.parseInt(fieldcard1.substring(1,1+2));
-						} else if(fieldcard1.length() >= 5 && fieldcard1.length() < 9){
-							BattleLine.s_fcards[i][0] = Integer.parseInt(fieldcard1.substring(1,1+2));
-							BattleLine.s_fcards[i][1] = Integer.parseInt(fieldcard1.substring(5,5+2));
-						} else if(fieldcard1.length() >= 9 && fieldcard1.length() < 13){
-							BattleLine.s_fcards[i][0] = Integer.parseInt(fieldcard1.substring(1,1+2));
-							BattleLine.s_fcards[i][1] = Integer.parseInt(fieldcard1.substring(5,5+2));
-							BattleLine.s_fcards[i][2] = Integer.parseInt(fieldcard1.substring(9,9+2));
-						}
-						
 
-						//flaglabel[i].setText("[" + BattleLine.s_fcards[i][0] + "," + BattleLine.s_fcards[i][1] + "," + BattleLine.s_fcards[i][2] + "]");
-						//opponent_flag[i].setText("[" + BattleLine.c_fcards[i][0] + "," + BattleLine.c_fcards[i][1] + "," + BattleLine.c_fcards[i][2] + "]");
-						for(int j=0;j<3;j++){
-							//ImageIcon icon = new ImageIcon("./image/"+handcard+".png");
-							//btn[i].setIcon(icon);
-							ImageIcon icon1 = new ImageIcon("./image/s"+BattleLine.s_fcards[i][j]+".png");
-							gui.flaglabel_card[i][j].setIcon(icon1);
-							ImageIcon icon2 = new ImageIcon("./image/s"+BattleLine.c_fcards[i][j]+".png");
-							gui.opponent_flag_card[i][j].setIcon(icon2);
+						assert fieldcard0.length() < 13;
+						if (2 < fieldcard0.length()) {
+							c_fcards[i][0] = Integer.parseInt(fieldcard0.substring(1,1+2));
+						}
+						if (4 < fieldcard0.length()) {
+							c_fcards[i][1] = Integer.parseInt(fieldcard0.substring(5,5+2));
+						}
+						if (8 < fieldcard0.length()) {
+							c_fcards[i][2] = Integer.parseInt(fieldcard0.substring(9,9+2));
+						}
+
+						assert fieldcard1.length() < 13;
+						if (2 < fieldcard1.length()) {
+							s_fcards[i][0] = Integer.parseInt(fieldcard1.substring(1,1+2));
+						}
+						if (4 < fieldcard1.length()) {
+							s_fcards[i][1] = Integer.parseInt(fieldcard1.substring(5,5+2));
+						}
+						if (5 < fieldcard1.length()) {
+							s_fcards[i][2] = Integer.parseInt(fieldcard1.substring(9,9+2));
+						}
+
+						for(int j = 0; j < 3; j++) {
+							gui.flaglabel_card[i][j].setIcon(smallCardIcon(s_fcards[i][j]));
+							gui.opponent_flag_card[i][j].setIcon(smallCardIcon(c_fcards[i][j]));
 						}
 					}
 					if(selectcardstack!=-1 && system.turn==0){
