@@ -52,7 +52,6 @@ class CUI /*implements ActionListener*/{
 			GUI gui = new GUI("BattleLine");
 			List<Card> co = new ArrayList<Card>();
 			GUICard cards1=new GUICard();
-
 			GUIField cards2=new GUIField();
 			GUICenter cards3=new GUICenter();
 			GUIField cards4=new GUIField();
@@ -67,7 +66,7 @@ class CUI /*implements ActionListener*/{
 
 			JButton[] btn = new JButton[7];
 			JButton[] cardstack= new JButton[2];
-			JLabel[] flag= new JLabel[9];
+			JButton[] flag= new JButton[9];
 			JLabel[] opponent_flag=new JLabel[9];
 			JLabel[][] opponent_flag_card=new JLabel[9][3];
 
@@ -95,7 +94,6 @@ class CUI /*implements ActionListener*/{
 			 		opponent_flag_card[i][j]=new JLabel();
 			 		opponent_flag[i].add(opponent_flag_card[i][j]);
 			 	}
-
 				opponent_flag[i].setOpaque(true);
 				cards2.add(opponent_flag[i]);
 			}
@@ -110,15 +108,19 @@ class CUI /*implements ActionListener*/{
 			 	cardstack[i].setIcon(icon);
 			 	EtchedBorder border = new EtchedBorder(EtchedBorder.RAISED, Color.white, Color.white);
     			cardstack[i].setBorder(border);
-
 				cardstack[i].setOpaque(true);
 			}
+
 			cardstack[0].setText("unit");
 			cardstack[1].setText("tactics");
-
+			
 			cards3.add(cardstack[0]);
 			for(Integer i=0;i<9;i++){
-				flag[i]=new JLabel();
+				flag[i]=new JButton();
+
+				flag[i].addActionListener(
+					e->selectedarea=Integer.parseInt(e.getActionCommand()));
+				flag[i].setActionCommand(i.toString());
 				ImageIcon icon =new ImageIcon("./image/flag.png");
 				flag[i].setIcon(icon);
 				cards3.add(flag[i]);
@@ -152,7 +154,12 @@ class CUI /*implements ActionListener*/{
 			gui.add(cards4);
 			gui.add(cards5);
     		gui.setVisible(true);
-
+    		for(int i = 0; i < 9; i++) {
+				for(int j = 0; j < 3; j++) {
+					BattleLine.s_fcards[i][j] = 99;	//initialize s_fcards
+					BattleLine.c_fcards[i][j] = 99;	//initialize c_fcards
+				}
+			}
 
 			while (true) {
 				if (s.selectionArea == Area.None) {
@@ -175,11 +182,13 @@ class CUI /*implements ActionListener*/{
 						BattleLine.out_box.println("handcards");// sign of giving hand cards
 						for (int i = 0; i < s.player(s.turn).cards.size(); i++) {
 							Card c = s.player(s.turn).cards.get(i);
-							ImageIcon icon = new ImageIcon("./image/"+c.toString()+".png");
-							
+							Card cs= s.player(0).cards.get(i);
+							ImageIcon icon = new ImageIcon("./image/"+cs.toString()+".png");
+							btn[i].setIcon(icon);
+
 							BattleLine.out_box.println(c.toString());//give hand cards
 							
-							btn[i].setIcon(icon);
+							
 							EtchedBorder border = new EtchedBorder(EtchedBorder.RAISED, Color.black, Color.black);
 	    					btn[i].setBorder(border);
 						}
@@ -187,39 +196,45 @@ class CUI /*implements ActionListener*/{
 					}
 
 
-					if(selectedcard!=-1){
+					if(selectedcard!=-1 && s.turn==0){
 						System.out.println(selectedcard);
 						final Player player = s.player(s.turn);
 						int selectedIndex =selectedcard;
-						if (s.turn == 1) {
-							BattleLine.out_box.println("Input");
-							selectedIndex = Integer.parseInt(BattleLine.in_box.readLine());
-						}
 						assert 0 <= selectedIndex && selectedIndex < player.cards.size();
 						s.selectCard(player.cards.get(selectedIndex));
 						System.out.println();
 						selectedcard=-1;
 						selectedarea=-1;
 						selectcardstack=-1;
+					}else if(s.turn==1){
+						final Player player = s.player(s.turn);
+						int selectedIndex ;
+						BattleLine.out_box.println("Input");
+						selectedIndex = Integer.parseInt(BattleLine.in_box.readLine());
+						assert 0 <= selectedIndex && selectedIndex < player.cards.size();
+						s.selectCard(player.cards.get(selectedIndex));
+						System.out.println("s.turn=1\n");
 					}
 				} else if (s.selectionArea == Area.Flags) {
 
 					System.out.println("put card on one of the flags...");
 					
 					
-					if(selectedarea!=-1){
+					if(selectedarea!=-1 && s.turn==0){
 						System.out.println(selectedarea);
 						int selectedIndex = selectedarea;
-						if (s.turn == 1) {
-							BattleLine.out_box.println("Input");
-							selectedIndex = Integer.parseInt(BattleLine.in_box.readLine());
-						}
 						assert 0 <= selectedIndex && selectedIndex < s.flags.size();
 						s.selectFlag(s.flag(selectedIndex));
 						selectedcard=-1;
 						selectedarea=-1;
 						selectcardstack=-1;
 
+					}else if(s.turn==1){
+						int selectedIndex ;
+						BattleLine.out_box.println("Input");
+						selectedIndex = Integer.parseInt(BattleLine.in_box.readLine());
+						assert 0 <= selectedIndex && selectedIndex < s.flags.size();
+						s.selectFlag(s.flag(selectedIndex));
 					}
 
 				} else if (s.selectionArea == Area.CardStack) {
@@ -234,11 +249,7 @@ class CUI /*implements ActionListener*/{
 					for (Integer i = 0; i < s.flags.size(); i++) {
 						Flag f = s.flag(i);
 
-						opponent_flag[i].setText(f.cards.get(1).toString());
-						
 						BattleLine.out_box.println(f.cards.get(1).toString());//give client's fieldcards
-						
-						flaglabel[i].setText(f.cards.get(0).toString());
 						BattleLine.out_box.println(f.cards.get(0).toString());//give server's fieldcards
 						
 						String fieldcard0 = f.cards.get(1).toString();
@@ -263,7 +274,10 @@ class CUI /*implements ActionListener*/{
 							BattleLine.s_fcards[i][1] = Integer.parseInt(fieldcard1.substring(5,5+2));
 							BattleLine.s_fcards[i][2] = Integer.parseInt(fieldcard1.substring(9,9+2));
 						}
-
+						
+		
+						//flaglabel[i].setText("[" + BattleLine.s_fcards[i][0] + "," + BattleLine.s_fcards[i][1] + "," + BattleLine.s_fcards[i][2] + "]");
+						//opponent_flag[i].setText("[" + BattleLine.c_fcards[i][0] + "," + BattleLine.c_fcards[i][1] + "," + BattleLine.c_fcards[i][2] + "]");
 						for(int j=0;j<3;j++){
 							//ImageIcon icon = new ImageIcon("./image/"+handcard+".png");
 							//btn[i].setIcon(icon);
@@ -273,25 +287,25 @@ class CUI /*implements ActionListener*/{
 							opponent_flag_card[i][j].setIcon(icon2);
 						}
 					}
-					if(selectcardstack!=-1){
+					if(selectcardstack!=-1 && s.turn==0){
 						int selectedIndex = selectcardstack;
 						assert 0 <= selectedIndex && selectedIndex <= 1;
-						if(s.turn==0){
-							if (selectedIndex == 0)
-								s.selectStack(s.unitStack);
-							else if (selectedIndex == 1)
-								s.selectStack(s.tacticsStack);
-						}else if(s.turn ==1){
-							BattleLine.out_box.println("Input");
-							selectedIndex = Integer.parseInt(BattleLine.in_box.readLine());
-							if (selectedIndex == 0)
-								s.selectStack(s.unitStack);
-							else if (selectedIndex == 1)
-								s.selectStack(s.tacticsStack);
-						}
+						
+						if (selectedIndex == 0)
+							s.selectStack(s.unitStack);
+						else if (selectedIndex == 1)
+						s.selectStack(s.tacticsStack);
 						selectedcard=-1;
 						selectedarea=-1;
 						selectcardstack=-1;
+					}else if(s.turn==1){
+						BattleLine.out_box.println("Input");
+						int selectedIndex;
+						selectedIndex = Integer.parseInt(BattleLine.in_box.readLine());
+ 						if (selectedIndex == 0)
+ 							s.selectStack(s.unitStack);
+ 						else if (selectedIndex == 1)
+ 							s.selectStack(s.tacticsStack);
 
 					}
 					BattleLine.card_Flag = 0;// reset
@@ -316,6 +330,7 @@ public class BattleLine /* extends Application */ {
 	static int[] hcards = new int[8];
 	static int[][] s_fcards = new int[9][3];
 	static int[][] c_fcards = new int[9][3];
+	
 
 	public static void main(String[] args) 
 		throws IOException {
