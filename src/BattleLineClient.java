@@ -61,7 +61,6 @@ class BattleLineClient {
 	static GUI gui;
 	static void layoutComponents() {
 		gui = new GUI("BattleLine");
-		gui.layoutComponents();
 
 		for (int i = 0; i < 2; i++) {
 			gui.cardstack[i].addActionListener(e -> selectcardstack = Integer.parseInt(e.getActionCommand()));

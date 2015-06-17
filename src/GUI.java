@@ -39,6 +39,7 @@ class GUI extends JFrame {
 		setBounds(100, 100, 1200, 750);		
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		layoutComponents();
 	}
 
  	JLabel[][] flaglabel_card = new JLabel[9][3];
@@ -117,7 +118,6 @@ class GUI extends JFrame {
 			cards3.add(flag[i]);
 		}
 		cards3.add(cardstack[1]);
-
 
 		cards4.add(label1);
 		for(Integer i=0;i<9;i++){
