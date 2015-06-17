@@ -30,9 +30,6 @@ public class BattleLine /* extends Application */ {
 	static int[] hcards = new int[8];
 	static int[][] s_fcards = new int[9][3];
 	static int[][] c_fcards = new int[9][3];
-	static Integer selectedcard=-1;
-	static Integer selectedarea=-1;
-	static Integer selectcardstack=-1;
 
 	public static void main(String[] args) throws IOException {
 		ServerSocket s = new ServerSocket(PORT);
@@ -63,34 +60,42 @@ public class BattleLine /* extends Application */ {
 		return new ImageIcon("./image/s" + obj + ".png");
 	}
 
-	static void deselect() {
-		selectedcard = -1;
-		selectedarea = -1;
-		selectcardstack = -1;
-	}
-
-	static int readFromClient() throws IOException {
+	static int readIntFromClient() throws IOException {
 		out_box.println("Input");
 		return Integer.parseInt(BattleLine.in_box.readLine());
 	}
 
+	static GameSystem system;
 	static void start() {
-		GameSystem system = new GameSystem();
+		system = new GameSystem();
 
 		try {
 			BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 			
 			GUI gui = new GUI("BattleLine");
 			for (int i = 0; i < 2; i++) {
-				gui.cardstack[i].addActionListener(e -> selectcardstack = Integer.parseInt(e.getActionCommand()));
+				gui.cardstack[i].addActionListener(e -> selectStack(Integer.parseInt(e.getActionCommand())));
 			}
 
 			for (int i = 0; i < 9; i++) {
-				gui.flag[i].addActionListener(e -> selectedarea = Integer.parseInt(e.getActionCommand()));
+				gui.flag[i].addActionListener(e -> {
+					int selectedIndex = Integer.parseInt(e.getActionCommand());
+					System.out.println(selectedIndex);
+					assert 0 <= selectedIndex && selectedIndex < system.flags.size();
+					system.selectFlag(system.flag(selectedIndex));
+				});
 			}
 
 			for (int i = 0; i < 7; i++) {
-				gui.btn[i].addActionListener(e -> selectedcard = Integer.parseInt(e.getActionCommand()));
+				gui.btn[i].addActionListener(e -> {
+					final Player player = system.player(system.turn);
+					int selectedIndex = Integer.parseInt(e.getActionCommand());
+					
+					System.out.println(selectedIndex);
+					assert 0 <= selectedIndex && selectedIndex < player.cards.size();
+					system.selectCard(player.cards.get(selectedIndex));
+					System.out.println();
+				});
 			}
 
 			for(int i = 0; i < 9; i++) {
@@ -105,135 +110,114 @@ public class BattleLine /* extends Application */ {
 					System.out.println();
 					system.step();
 				} else if (system.selectionArea == Area.MyHand || system.selectionArea == Area.OpponentHand) {
+					//server's turn
+					if(system.turn == 0) {
+						for (int i = 0; i < system.player(system.turn).cards.size(); i++) {
+							Card c = system.player(system.turn).cards.get(i);
 
-					if(system.turn == 0) {	//server's turn
-					for (int i = 0; i < system.player(system.turn).cards.size(); i++) {
-						Card c = system.player(system.turn).cards.get(i);
-
-						gui.btn[i].setIcon(cardIcon(c));
-						gui.btn[i].setBorder(new EtchedBorder(EtchedBorder.RAISED, Color.black, Color.black));
-					}
-				}
-
-				if(system.turn == 1 && card_Flag == 0) {	//client's turn
-					out_box.println("handcards"); // sign of giving hand cards
-					for (int i = 0; i < system.player(system.turn).cards.size(); i++) {
-						Card c = system.player(system.turn).cards.get(i);
-						Card cs= system.player(0).cards.get(i);
-
-						out_box.println(c);
-						// give hand cards
-
-						gui.btn[i].setIcon(cardIcon(cs));
-						gui.btn[i].setBorder(new EtchedBorder(EtchedBorder.RAISED, Color.black, Color.black));
+							gui.btn[i].setIcon(cardIcon(c));
+							gui.btn[i].setBorder(new EtchedBorder(EtchedBorder.RAISED, Color.black, Color.black));
+						}
 					}
 
-					card_Flag = 1;
-				}
+					//client's turn
+					if(system.turn == 1 && card_Flag == 0) {
+						// sign of giving hand cards
+						out_box.println("handcards");
 
-				if (system.turn == 1) {
+						for (int i = 0; i < system.player(system.turn).cards.size(); i++) {
+							Card c = system.player(system.turn).cards.get(i);
+							Card cs= system.player(0).cards.get(i);
+
+							// give hand cards
+							out_box.println(c);
+
+							gui.btn[i].setIcon(cardIcon(cs));
+							gui.btn[i].setBorder(new EtchedBorder(EtchedBorder.RAISED, Color.black, Color.black));
+						}
+
+						card_Flag = 1;
+					}
+
 					final Player player = system.player(system.turn);
-					int selectedIndex = readFromClient();
-					assert 0 <= selectedIndex && selectedIndex < player.cards.size();
-					system.selectCard(player.cards.get(selectedIndex));
-					System.out.println("system.turn=1\n");
-				} else if (selectedcard != -1 && system.turn == 0) {
-					System.out.println(selectedcard);
-					final Player player = system.player(system.turn);
-					int selectedIndex =selectedcard;
-					assert 0 <= selectedIndex && selectedIndex < player.cards.size();
-					system.selectCard(player.cards.get(selectedIndex));
-					System.out.println();
+					if (system.turn == 1) {
+						int selectedIndex = readIntFromClient();
+						assert 0 <= selectedIndex && selectedIndex < player.cards.size();
+						system.selectCard(player.cards.get(selectedIndex));
+						System.out.println("system.turn=1\n");
+					}
+				} else if (system.selectionArea == Area.Flags) {
+					System.out.println("put card on one of the flags...");
 
-					deselect();
-				}
-			} else if (system.selectionArea == Area.Flags) {
-				System.out.println("put card on one of the flags...");
+					if (system.turn==1) {
+						int selectedIndex = readIntFromClient();
+						assert 0 <= selectedIndex && selectedIndex < system.flags.size();
+						system.selectFlag(system.flag(selectedIndex));
+					}
 
-				if(selectedarea != -1 && system.turn == 0) {
-					System.out.println(selectedarea);
-					int selectedIndex = selectedarea;
-					assert 0 <= selectedIndex && selectedIndex < system.flags.size();
-					system.selectFlag(system.flag(selectedIndex));
+				} else if (system.selectionArea == Area.CardStack) {
+					System.out.println("draw a card from...");
+					System.out.println("[0] unit, [1] tactics");
 
-					deselect();
-				} else if (system.turn==1) {
-					int selectedIndex = readFromClient();
-					assert 0 <= selectedIndex && selectedIndex < system.flags.size();
-					system.selectFlag(system.flag(selectedIndex));
-				}
+					out_box.println("fieldcard");
 
-			} else if (system.selectionArea == Area.CardStack) {
-				System.out.println("draw a card from...");
-				System.out.println("[0] unit, [1] tactics");
-
-				out_box.println("fieldcard");
-
-				for (Integer i = 0; i < system.flags.size(); i++) {
-					Flag f = system.flag(i);
+					for (Integer i = 0; i < system.flags.size(); i++) {
+						Flag f = system.flag(i);
 
 					// give client's fieldcards
-					out_box.println(f.cards.get(1).toString());
+						out_box.println(f.cards.get(1).toString());
 					// give server's fieldcards
-					out_box.println(f.cards.get(0).toString());
+						out_box.println(f.cards.get(0).toString());
 
-					String fieldcard0 = f.cards.get(1).toString();
-					String fieldcard1 = f.cards.get(0).toString();
+						String fieldcard0 = f.cards.get(1).toString();
+						String fieldcard1 = f.cards.get(0).toString();
 
-					assert fieldcard0.length() < 13;
-					if (2 < fieldcard0.length()) {
-						c_fcards[i][0] = Integer.parseInt(fieldcard0.substring(1,1+2));
-					}
-					if (4 < fieldcard0.length()) {
-						c_fcards[i][1] = Integer.parseInt(fieldcard0.substring(5,5+2));
-					}
-					if (8 < fieldcard0.length()) {
-						c_fcards[i][2] = Integer.parseInt(fieldcard0.substring(9,9+2));
+						assert fieldcard0.length() < 13;
+						if (2 < fieldcard0.length()) {
+							c_fcards[i][0] = Integer.parseInt(fieldcard0.substring(1,1+2));
+						}
+						if (4 < fieldcard0.length()) {
+							c_fcards[i][1] = Integer.parseInt(fieldcard0.substring(5,5+2));
+						}
+						if (8 < fieldcard0.length()) {
+							c_fcards[i][2] = Integer.parseInt(fieldcard0.substring(9,9+2));
+						}
+
+						assert fieldcard1.length() < 13;
+						if (2 < fieldcard1.length()) {
+							s_fcards[i][0] = Integer.parseInt(fieldcard1.substring(1,1+2));
+						}
+						if (4 < fieldcard1.length()) {
+							s_fcards[i][1] = Integer.parseInt(fieldcard1.substring(5,5+2));
+						}
+						if (5 < fieldcard1.length()) {
+							s_fcards[i][2] = Integer.parseInt(fieldcard1.substring(9,9+2));
+						}
+
+						for(int j = 0; j < 3; j++) {
+							gui.flaglabel_card[i][j].setIcon(smallCardIcon(s_fcards[i][j]));
+							gui.opponent_flag_card[i][j].setIcon(smallCardIcon(c_fcards[i][j]));
+						}
 					}
 
-					assert fieldcard1.length() < 13;
-					if (2 < fieldcard1.length()) {
-						s_fcards[i][0] = Integer.parseInt(fieldcard1.substring(1,1+2));
-					}
-					if (4 < fieldcard1.length()) {
-						s_fcards[i][1] = Integer.parseInt(fieldcard1.substring(5,5+2));
-					}
-					if (5 < fieldcard1.length()) {
-						s_fcards[i][2] = Integer.parseInt(fieldcard1.substring(9,9+2));
+					if (system.turn == 1) {
+						selectStack(readIntFromClient());
 					}
 
-					for(int j = 0; j < 3; j++) {
-						gui.flaglabel_card[i][j].setIcon(smallCardIcon(s_fcards[i][j]));
-						gui.opponent_flag_card[i][j].setIcon(smallCardIcon(c_fcards[i][j]));
-					}
+					card_Flag = 0;
 				}
-
-				if (selectcardstack != -1 && system.turn == 0) {
-					int selectedIndex = selectcardstack;
-					assert 0 <= selectedIndex && selectedIndex <= 1;
-
-					if (selectedIndex == 0)
-						system.selectStack(system.unitStack);
-					else if (selectedIndex == 1)
-						system.selectStack(system.tacticsStack);
-
-					deselect();
-				} else if (system.turn == 1) {
-					int selectedIndex = readFromClient();
-
-					assert 0 <= selectedIndex && selectedIndex <= 1;
-					if (selectedIndex == 0)
-						system.selectStack(system.unitStack);
-					else if (selectedIndex == 1)
-						system.selectStack(system.tacticsStack);
-				}
-
-				card_Flag = 0;
 			}
-		}
 
-	} catch (Exception e) {
-		System.out.println(e);
+		} catch (Exception e) {
+			System.out.println(e);
+		}
 	}
-}
+
+	static void selectStack(int index) {
+		assert 0 <= index && index <= 1;
+		if (index == 0)
+			system.selectStack(system.unitStack);
+		else if (index == 1)
+			system.selectStack(system.tacticsStack);
+	}
 }
