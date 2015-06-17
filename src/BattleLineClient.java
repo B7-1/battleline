@@ -70,10 +70,14 @@ class BattleLineClient {
 			
 			JLabel[] opponent_card=new JLabel[7]; 
 			JLabel[] flaglabel = new JLabel[9];
+			JLabel[][] flaglabel_card=new JLabel[9][3];
+
 			JButton[] btn = new JButton[7];
 			JButton[] cardstack= new JButton[2];
 			JButton[] flag= new JButton[9];
 			JLabel[] opponent_flag=new JLabel[9];
+			JLabel[][] opponent_flag_card=new JLabel[9][3];
+
 			JLabel label1=new JLabel();
 			JLabel label2=new JLabel();
 			JLabel label3=new JLabel();
@@ -92,7 +96,12 @@ class BattleLineClient {
 			cards2.add(label3);
 			for(Integer i=0;i<9;i++){
 			 	opponent_flag[i]=new JLabel();
-			 	opponent_flag[i].setBackground(Color.GRAY);
+			 	opponent_flag[i].setBackground(Color.WHITE);
+			 	opponent_flag[i].setLayout(new GridLayout(3,0));
+			 	for(Integer j=0;j<3;j++){
+			 		opponent_flag_card[i][j]=new JLabel();
+			 		opponent_flag[i].add(opponent_flag_card[i][j]);
+			 	}
 				opponent_flag[i].setOpaque(true);
 				cards2.add(opponent_flag[i]);
 			}
@@ -130,9 +139,13 @@ class BattleLineClient {
 			cards4.add(label1);
 			for(Integer i=0;i<9;i++){
 				flaglabel[i]=new JLabel();
-				//flagbtn[i].setLayout(new GridLayout(0,3));
+				flaglabel[i].setLayout(new GridLayout(3,0));
 				//flaglabel[i].setActionCommand(i.toString());
-				flaglabel[i].setBackground(Color.GRAY);
+				for(Integer j=0;j<3;j++){
+					flaglabel_card[i][j]=new JLabel();
+			 		flaglabel[i].add(flaglabel_card[i][j]);
+			 	}
+				flaglabel[i].setBackground(Color.WHITE);
 				flaglabel[i].setOpaque(true);
 				cards4.add(flaglabel[i]);
 			}
@@ -180,6 +193,7 @@ class BattleLineClient {
 
 				String str="-1";
 				if(wait==0){
+					System.out.println("stop");
 					str = in_box2.readLine();
 				}
 
@@ -219,8 +233,8 @@ class BattleLineClient {
 					System.out.println("in wait 2 \n");
 				} else if(str.equals("handcards")){
 					for (int i = 0; i < 7; i++){
+						System.out.println("handcard:");
 						String handcard = in_box2.readLine();
-						//System.out.println("handcard:" + handcard);
 						ImageIcon icon = new ImageIcon("./image/"+handcard+".png");
 						btn[i].setIcon(icon);
 					}
@@ -248,8 +262,15 @@ class BattleLineClient {
 							s_fcards[i][1] = Integer.parseInt(fieldcard1.substring(5,5+2));
 							s_fcards[i][2] = Integer.parseInt(fieldcard1.substring(9,9+2));
 						}
-						flaglabel[i].setText("[" + c_fcards[i][0] + "," + c_fcards[i][1] + "," + c_fcards[i][2] + "]" );
-						opponent_flag[i].setText("[" + s_fcards[i][0] + "," + s_fcards[i][1] + "," + s_fcards[i][2] + "]");
+
+						for(int j=0;j<3;j++){
+							//ImageIcon icon = new ImageIcon("./image/"+handcard+".png");
+							//btn[i].setIcon(icon);
+							ImageIcon icon1 = new ImageIcon("./image/s"+c_fcards[i][j]+".png");
+							flaglabel_card[i][j].setIcon(icon1);
+							ImageIcon icon2 = new ImageIcon("./image/s"+s_fcards[i][j]+".png");
+							opponent_flag_card[i][j].setIcon(icon2);
+						}
 					}
 				} else {
 					System.out.println(str);

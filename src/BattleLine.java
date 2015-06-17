@@ -63,10 +63,14 @@ class CUI /*implements ActionListener*/{
 			
 			JLabel[] opponent_card=new JLabel[7]; 
 			JLabel[] flaglabel = new JLabel[9];
+			JLabel[][] flaglabel_card=new JLabel[9][3];
+
 			JButton[] btn = new JButton[7];
 			JButton[] cardstack= new JButton[2];
 			JButton[] flag= new JButton[9];
 			JLabel[] opponent_flag=new JLabel[9];
+			JLabel[][] opponent_flag_card=new JLabel[9][3];
+
 			JLabel label1=new JLabel();
 			JLabel label2=new JLabel();
 			JLabel label3=new JLabel();
@@ -85,8 +89,12 @@ class CUI /*implements ActionListener*/{
 			cards2.add(label3);
 			for(Integer i=0;i<9;i++){
 			 	opponent_flag[i]=new JLabel();
-			 	opponent_flag[i].setBackground(Color.GRAY);
-			 	opponent_flag[i].setLayout(new GridLayout(0,3));
+			 	opponent_flag[i].setBackground(Color.WHITE);
+			 	opponent_flag[i].setLayout(new GridLayout(3,0));
+			 	for(Integer j=0;j<3;j++){
+			 		opponent_flag_card[i][j]=new JLabel();
+			 		opponent_flag[i].add(opponent_flag_card[i][j]);
+			 	}
 				opponent_flag[i].setOpaque(true);
 				cards2.add(opponent_flag[i]);
 			}
@@ -123,8 +131,12 @@ class CUI /*implements ActionListener*/{
 			cards4.add(label1);
 			for(Integer i=0;i<9;i++){
 				flaglabel[i]=new JLabel();
-				flaglabel[i].setLayout(new GridLayout(0,3));
-				flaglabel[i].setBackground(Color.GRAY);
+				flaglabel[i].setLayout(new GridLayout(3,0));
+				for(Integer j=0;j<3;j++){
+					flaglabel_card[i][j]=new JLabel();
+			 		flaglabel[i].add(flaglabel_card[i][j]);
+			 	}
+				flaglabel[i].setBackground(Color.WHITE);
 				flaglabel[i].setOpaque(true);
 				cards4.add(flaglabel[i]);
 			}
@@ -222,14 +234,41 @@ class CUI /*implements ActionListener*/{
 					System.out.println("[0] unit, [1] tactics");
 
 					BattleLine.out_box.println("fieldcard");
-					for (int i = 0; i < s.flags.size(); i++) {
-						Flag f = s.flag(i);
-						opponent_flag[i].setText(f.cards.get(1).toString());
-						
-						BattleLine.out_box.println(f.cards.get(1).toString());//give client's fieldcards
 
-						flaglabel[i].setText(f.cards.get(0).toString());
-						BattleLine.out_box.println(f.cards.get(0).toString());//give server's fieldcards
+
+					for (Integer i = 0; i < s.flags.size(); i++) {
+						Flag f = s.flag(i);
+
+						String fieldcard0 = f.cards.get(1).toString();
+						String fieldcard1 = f.cards.get(0).toString();
+						if(fieldcard0.length() <= 4 && fieldcard0.length() > 2) {
+							BattleLine.c_fcards[i][0] = Integer.parseInt(fieldcard0.substring(1,1+2));
+						} else if(fieldcard0.length() >= 5 && fieldcard0.length() < 9){
+							BattleLine.c_fcards[i][0] = Integer.parseInt(fieldcard0.substring(1,1+2));
+							BattleLine.c_fcards[i][1] = Integer.parseInt(fieldcard0.substring(5,5+2));
+						} else if(fieldcard0.length() >= 9 && fieldcard0.length() < 13){
+							BattleLine.c_fcards[i][0] = Integer.parseInt(fieldcard0.substring(1,1+2));
+							BattleLine.c_fcards[i][1] = Integer.parseInt(fieldcard0.substring(5,5+2));
+							BattleLine.c_fcards[i][2] = Integer.parseInt(fieldcard0.substring(9,9+2));
+						}
+						if(fieldcard1.length() <= 4 && fieldcard1.length() > 2) {
+							BattleLine.s_fcards[i][0] = Integer.parseInt(fieldcard1.substring(1,1+2));
+						} else if(fieldcard1.length() >= 5 && fieldcard1.length() < 9){
+							BattleLine.s_fcards[i][0] = Integer.parseInt(fieldcard1.substring(1,1+2));
+							BattleLine.s_fcards[i][1] = Integer.parseInt(fieldcard1.substring(5,5+2));
+						} else if(fieldcard1.length() >= 9 && fieldcard1.length() < 13){
+							BattleLine.s_fcards[i][0] = Integer.parseInt(fieldcard1.substring(1,1+2));
+							BattleLine.s_fcards[i][1] = Integer.parseInt(fieldcard1.substring(5,5+2));
+							BattleLine.s_fcards[i][2] = Integer.parseInt(fieldcard1.substring(9,9+2));
+						}
+						for(int j=0;j<3;j++){
+							//ImageIcon icon = new ImageIcon("./image/"+handcard+".png");
+							//btn[i].setIcon(icon);
+							ImageIcon icon1 = new ImageIcon("./image/s"+BattleLine.s_fcards[i][j]+".png");
+							flaglabel_card[i][j].setIcon(icon1);
+							ImageIcon icon2 = new ImageIcon("./image/s"+BattleLine.c_fcards[i][j]+".png");
+							opponent_flag_card[i][j].setIcon(icon2);
+						}
 					}
 					if(selectcardstack!=-1 && s.turn==0){
 						int selectedIndex = selectcardstack;
@@ -270,6 +309,9 @@ public class BattleLine /* extends Application */ {
 	static int card_Flag=0;//giving hand cards	0:not yet 1:already
 	static int deck_Flag=0;//giving deck choices	0:not yet 1:already
 	static int flag_Flag=0;//giving flag choices	0:not yet 1:already
+	static int[] hcards = new int[8];
+	static int[][] s_fcards = new int[9][3];
+	static int[][] c_fcards = new int[9][3];
 	public static void main(String[] args) 
 		throws IOException {
 		ServerSocket s = new ServerSocket(PORT);
