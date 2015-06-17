@@ -82,19 +82,23 @@ public class BattleLine extends WindowAdapter {
 	}
 
 	GameSystem system;
+	GUI gui;
 	void start() {
 		system = new GameSystem();
 
 		try {
 			BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 			
-			GUI gui = new GUI("BattleLine");
+			gui = new GUI("BattleLine");
 			gui.addWindowListener(this);
 			for (int i = 0; i < 2; i++) {
 				gui.cardstack[i].addActionListener(e -> {
 					if (inputmode != InputMode.Stack) return;
 					selectStack(Integer.parseInt(e.getActionCommand()));
 					inputmode = InputMode.Disabled;
+					updateHandCards();
+					updateFieldCards();
+					new Thread(() -> pollingLoop()).start();
 				});
 			}
 
@@ -106,6 +110,8 @@ public class BattleLine extends WindowAdapter {
 					assert 0 <= selectedIndex && selectedIndex < system.flags.size();
 					system.selectFlag(system.flag(selectedIndex));
 					inputmode = InputMode.Disabled;
+					updateFieldCards();
+					new Thread(() -> pollingLoop()).start();
 				});
 			}
 
@@ -120,6 +126,8 @@ public class BattleLine extends WindowAdapter {
 					system.selectCard(player.cards.get(selectedIndex));
 					System.out.println();
 					inputmode = InputMode.Disabled;
+					updateHandCards();
+					new Thread(() -> pollingLoop()).start();
 				});
 			}
 
@@ -130,113 +138,132 @@ public class BattleLine extends WindowAdapter {
 				}
 			}
 
-			while (true) {
-				if (system.selectionArea == Area.None) {
-					System.out.println();
-					system.step();
-				} else if (system.selectionArea == Area.MyHand || system.selectionArea == Area.OpponentHand) {
-					//server's turn
-					if(system.turn == 0) {
-						for (int i = 0; i < system.player(system.turn).cards.size(); i++) {
-							Card c = system.player(system.turn).cards.get(i);
-
-							gui.btn[i].setIcon(cardIcon(c));
-							gui.btn[i].setBorder(new EtchedBorder(EtchedBorder.RAISED, Color.black, Color.black));
-						}
-					}
-
-					//client's turn
-					if(system.turn == 1 && card_Flag == 0) {
-						// sign of giving hand cards
-						out_box.println("handcards");
-
-						for (int i = 0; i < system.player(system.turn).cards.size(); i++) {
-							Card c = system.player(system.turn).cards.get(i);
-							Card cs= system.player(0).cards.get(i);
-
-							// give hand cards
-							out_box.println(c);
-
-							gui.btn[i].setIcon(cardIcon(cs));
-							gui.btn[i].setBorder(new EtchedBorder(EtchedBorder.RAISED, Color.black, Color.black));
-						}
-
-						card_Flag = 1;
-					}
-
-					if (system.turn == 0) inputmode = InputMode.Card;
-					final Player player = system.player(system.turn);
-					if (system.turn == 1) {
-						int selectedIndex = readIntFromClient();
-						assert 0 <= selectedIndex && selectedIndex < player.cards.size();
-						system.selectCard(player.cards.get(selectedIndex));
-						System.out.println("system.turn=1\n");
-					}
-				} else if (system.selectionArea == Area.Flags) {
-					System.out.println("put card on one of the flags...");
-
-					if (system.turn == 0) inputmode = InputMode.Flag;
-					if (system.turn==1) {
-						int selectedIndex = readIntFromClient();
-						assert 0 <= selectedIndex && selectedIndex < system.flags.size();
-						system.selectFlag(system.flag(selectedIndex));
-					}
-				} else if (system.selectionArea == Area.CardStack) {
-					System.out.println("draw a card from...");
-					System.out.println("[0] unit, [1] tactics");
-
-					out_box.println("fieldcard");
-
-					for (Integer i = 0; i < system.flags.size(); i++) {
-						Flag f = system.flag(i);
-
-						// give client's fieldcards
-						out_box.println(f.cards.get(1).toString());
-						// give server's fieldcards
-						out_box.println(f.cards.get(0).toString());
-
-						String fieldcard0 = f.cards.get(1).toString();
-						String fieldcard1 = f.cards.get(0).toString();
-
-						assert fieldcard0.length() < 13;
-						if (2 < fieldcard0.length()) {
-							c_fcards[i][0] = Integer.parseInt(fieldcard0.substring(1,1+2));
-						}
-						if (4 < fieldcard0.length()) {
-							c_fcards[i][1] = Integer.parseInt(fieldcard0.substring(5,5+2));
-						}
-						if (8 < fieldcard0.length()) {
-							c_fcards[i][2] = Integer.parseInt(fieldcard0.substring(9,9+2));
-						}
-
-						assert fieldcard1.length() < 13;
-						if (2 < fieldcard1.length()) {
-							s_fcards[i][0] = Integer.parseInt(fieldcard1.substring(1,1+2));
-						}
-						if (4 < fieldcard1.length()) {
-							s_fcards[i][1] = Integer.parseInt(fieldcard1.substring(5,5+2));
-						}
-						if (5 < fieldcard1.length()) {
-							s_fcards[i][2] = Integer.parseInt(fieldcard1.substring(9,9+2));
-						}
-
-						for(int j = 0; j < 3; j++) {
-							gui.flaglabel_card[i][j].setIcon(smallCardIcon(s_fcards[i][j]));
-							gui.opponent_flag_card[i][j].setIcon(smallCardIcon(c_fcards[i][j]));
-						}
-					}
-
-					if (system.turn == 0) inputmode = InputMode.Stack;
-					if (system.turn == 1) {
-						selectStack(readIntFromClient());
-					}
-
-					card_Flag = 0;
-				}
-			}
-
+			pollingLoop();
 		} catch (Exception e) {
 			System.out.println(e);
+		}
+	}
+
+	void pollingLoop() {
+		try {
+			while (system.selectionArea == Area.None) {
+				System.out.println();
+				system.step();
+			}
+
+			if (system.selectionArea == Area.MyHand || system.selectionArea == Area.OpponentHand) {
+				//server's turn
+				if(system.turn == 0) {
+					updateHandCards();
+				}
+
+				//client's turn
+				if(system.turn == 1 && card_Flag == 0) {
+					// sign of giving hand cards
+					out_box.println("handcards");
+
+					for (int i = 0; i < system.player(system.turn).cards.size(); i++) {
+						Card c = system.player(system.turn).cards.get(i);
+						Card cs= system.player(0).cards.get(i);
+
+							// give hand cards
+						out_box.println(c);
+
+						gui.btn[i].setIcon(cardIcon(cs));
+						gui.btn[i].setBorder(new EtchedBorder(EtchedBorder.RAISED, Color.black, Color.black));
+					}
+
+					card_Flag = 1;
+				}
+
+				if (system.turn == 0) inputmode = InputMode.Card;
+				final Player player = system.player(system.turn);
+				if (system.turn == 1) {
+					int selectedIndex = readIntFromClient();
+					assert 0 <= selectedIndex && selectedIndex < player.cards.size();
+					system.selectCard(player.cards.get(selectedIndex));
+					System.out.println("system.turn=1\n");
+					pollingLoop();
+				}
+			} else if (system.selectionArea == Area.Flags) {
+				System.out.println("put card on one of the flags...");
+
+				if (system.turn == 0) inputmode = InputMode.Flag;
+				if (system.turn==1) {
+					int selectedIndex = readIntFromClient();
+					assert 0 <= selectedIndex && selectedIndex < system.flags.size();
+					system.selectFlag(system.flag(selectedIndex));
+					pollingLoop();
+				}
+			} else if (system.selectionArea == Area.CardStack) {
+				System.out.println("draw a card from...");
+				System.out.println("[0] unit, [1] tactics");
+
+				out_box.println("fieldcard");
+
+				updateFieldCards();
+
+				if (system.turn == 0) inputmode = InputMode.Stack;
+				if (system.turn == 1) {
+					selectStack(readIntFromClient());
+					pollingLoop();
+				}
+
+				card_Flag = 0;
+			}
+		}
+		catch (IOException e) {
+			System.out.println(e);
+		}
+	}
+
+	void updateHandCards() {
+		for (int i = 0; i < system.player(system.turn).cards.size(); i++) {
+			Card c = system.player(system.turn).cards.get(i);
+
+			gui.btn[i].setIcon(cardIcon(c));
+			gui.btn[i].setBorder(new EtchedBorder(EtchedBorder.RAISED, Color.black, Color.black));
+		}
+	}
+
+	void updateFieldCards() {
+		for (Integer i = 0; i < system.flags.size(); i++) {
+			Flag f = system.flag(i);
+
+						// give client's fieldcards
+			out_box.println(f.cards.get(1).toString());
+						// give server's fieldcards
+			out_box.println(f.cards.get(0).toString());
+
+			String fieldcard0 = f.cards.get(1).toString();
+			String fieldcard1 = f.cards.get(0).toString();
+
+			assert fieldcard0.length() < 13;
+			if (2 < fieldcard0.length()) {
+				c_fcards[i][0] = Integer.parseInt(fieldcard0.substring(1,1+2));
+			}
+			if (4 < fieldcard0.length()) {
+				c_fcards[i][1] = Integer.parseInt(fieldcard0.substring(5,5+2));
+			}
+			if (8 < fieldcard0.length()) {
+				c_fcards[i][2] = Integer.parseInt(fieldcard0.substring(9,9+2));
+			}
+
+			assert fieldcard1.length() < 13;
+			if (2 < fieldcard1.length()) {
+				s_fcards[i][0] = Integer.parseInt(fieldcard1.substring(1,1+2));
+			}
+			if (4 < fieldcard1.length()) {
+				s_fcards[i][1] = Integer.parseInt(fieldcard1.substring(5,5+2));
+			}
+			if (5 < fieldcard1.length()) {
+				s_fcards[i][2] = Integer.parseInt(fieldcard1.substring(9,9+2));
+			}
+
+			for(int j = 0; j < 3; j++) {
+				gui.flaglabel_card[i][j].setIcon(smallCardIcon(s_fcards[i][j]));
+				gui.opponent_flag_card[i][j].setIcon(smallCardIcon(c_fcards[i][j]));
+			}
 		}
 	}
 
